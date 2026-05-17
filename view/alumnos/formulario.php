@@ -1,17 +1,43 @@
+<?php
+
+require_once '../../model/Alumno.php';
+
+$alumno = new Alumno();
+
+$data = [
+    'id_alumno' => '',
+    'nombres' => '',
+    'apellidos' => '',
+    'correo' => '',
+    'telefono' => '',
+    'estado' => ''
+];
+
+if (isset($_GET['id'])) {
+    $data = $alumno->obtenerPorId($_GET['id']) ?? $data;
+
+}
+
+$alumnos = $alumno->obtenerTodos();
+
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Gestión de Alumnos</title>
+  <title>Registro de Alumnos</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap para el diseño visual -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Íconos de Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
   <style>
     body {
-      background-color: #f5f6fa;
+      background-color: #f8f9fb;
       font-family: 'Segoe UI', sans-serif;
-      padding: 2rem 1rem;
+      padding: 3rem 1rem;
     }
 
     .main-container {
@@ -21,286 +47,337 @@
 
     .card-custom {
       background-color: #ffffff;
-      border-radius: 14px;
-      border: none;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+      border-radius: 0.75rem;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
       padding: 2rem;
       margin-bottom: 2rem;
     }
 
     .title {
+      text-align: center;
+      margin-bottom: 2rem;
       font-weight: 600;
-      color: #222;
-      margin-bottom: 1.5rem;
+      color: #333;
+    }
+
+    .form-control {
+      height: 46px;
+      border-radius: 0.375rem;
+      padding-left: 2.5rem;
+    }
+
+    .form-select {
+      height: 46px;
+      border-radius: 0.375rem;
+      padding-left: 2.5rem;
     }
 
     .form-group {
       position: relative;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
     }
 
     .form-group i {
       position: absolute;
       top: 50%;
-      left: 14px;
+      left: 0.75rem;
       transform: translateY(-50%);
-      color: #777;
-      font-size: 1rem;
-    }
-
-    .form-control,
-    .form-select {
-      height: 46px;
-      border-radius: 8px;
-      padding-left: 42px;
-      font-size: 0.95rem;
+      color: #6c757d;
+      z-index: 2;
     }
 
     .btn-save {
-      height: 46px;
+      background-color: #007bff;
       border: none;
-      border-radius: 8px;
-      background-color: #0d6efd;
       color: white;
       font-weight: 500;
-      padding: 0 1.5rem;
+      padding: 0.75rem;
+      width: 100%;
+      border-radius: 0.375rem;
     }
 
     .btn-save:hover {
-      background-color: #0b5ed7;
+      background-color: #0069d9;
     }
 
     .btn-clear {
-      height: 46px;
-      border-radius: 8px;
-      padding: 0 1.5rem;
-    }
-
-    .table {
-      margin-bottom: 0;
+      width: 100%;
+      font-weight: 500;
+      border-radius: 0.375rem;
+      padding: 0.75rem;
     }
 
     .table thead th {
-      background-color: #f1f3f5;
-      color: #333;
-      font-weight: 600;
-      font-size: 0.9rem;
+      background-color: #007bff;
+      color: white;
+      font-weight: 500;
+      border: none;
     }
 
-    .table tbody td {
+    .table td, .table th {
       vertical-align: middle;
-      font-size: 0.92rem;
     }
 
     .badge-activo {
-      background-color: #d1e7dd;
-      color: #0f5132;
-      padding: 0.45rem 0.7rem;
-      border-radius: 20px;
-      font-size: 0.8rem;
+      background-color: #198754;
+      color: white;
+      padding: 0.35rem 0.65rem;
+      border-radius: 0.375rem;
+      font-size: 0.85rem;
     }
 
     .badge-inactivo {
-      background-color: #f8d7da;
-      color: #842029;
-      padding: 0.45rem 0.7rem;
-      border-radius: 20px;
-      font-size: 0.8rem;
+      background-color: #dc3545;
+      color: white;
+      padding: 0.35rem 0.65rem;
+      border-radius: 0.375rem;
+      font-size: 0.85rem;
     }
 
     .action-btn {
       border: none;
-      background: none;
-      font-size: 1rem;
-      margin-right: 0.4rem;
+      background: transparent;
+      font-size: 1.2rem;
+      margin: 0 0.25rem;
+      text-decoration: none;
     }
 
     .edit-btn {
-      color: #0d6efd;
+      color: #ffc107;
     }
 
     .delete-btn {
       color: #dc3545;
+    }
+
+    .back-link {
+      text-decoration: none;
+      color: #007bff;
+      font-size: 0.95rem;
+      display: inline-block;
+      margin-bottom: 1rem;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="main-container">
+<div class="main-container">
 
-    <!-- FORMULARIO -->
-    <div class="card-custom">
-      <h4 class="title">
-        <i class="bi bi-person-plus-fill"></i>
-        Registro de Alumno
-      </h4>
+  <!-- Enlace para volver al dashboard -->
+  <a href="../dashboard/dashboard.php" class="back-link">
+    <i class="bi bi-arrow-left-circle"></i> Volver al dashboard
+  </a>
 
-      <form action="" method="POST">
+  <!-- Tarjeta del formulario -->
+  <div class="card-custom">
 
-        <div class="row">
+    <!-- Título dinámico: cambia entre Registro y Editar -->
+    <h4 class="title">
+      <i class="bi bi-person-plus-fill"></i>
+      <?= isset($_GET['id']) ? 'Editar Alumno' : 'Registro de Alumno' ?>
+    </h4>
 
-          <div class="col-md-4">
-            <div class="form-group">
-              <i class="bi bi-hash"></i>
-              <input 
-                type="number" 
-                class="form-control" 
-                id="id_alumno" 
-                name="id_alumno" 
-                placeholder="Código del alumno"
-                required>
-            </div>
+    <!-- Formulario que envía los datos al controlador -->
+    <form action="../../controller/AlumnoController.php" method="POST">
+
+      <div class="row">
+
+        <!-- Campo ID del alumno -->
+        <div class="col-md-4">
+          <div class="form-group">
+            <i class="bi bi-hash"></i>
+            <input 
+              type="number" 
+              class="form-control" 
+              id="id_alumno" 
+              name="id_alumno" 
+              placeholder="Código del alumno"
+              value="<?= htmlspecialchars($data['id_alumno']) ?>"
+              <?= isset($_GET['id']) ? 'readonly' : '' ?>
+              required>
           </div>
-
-          <div class="col-md-4">
-            <div class="form-group">
-              <i class="bi bi-person-fill"></i>
-              <input 
-                type="text" 
-                class="form-control" 
-                id="nombres" 
-                name="nombres" 
-                placeholder="Nombres"
-                required>
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="form-group">
-              <i class="bi bi-person-lines-fill"></i>
-              <input 
-                type="text" 
-                class="form-control" 
-                id="apellidos" 
-                name="apellidos" 
-                placeholder="Apellidos"
-                required>
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="form-group">
-              <i class="bi bi-envelope-fill"></i>
-              <input 
-                type="email" 
-                class="form-control" 
-                id="correo" 
-                name="correo" 
-                placeholder="Correo electrónico">
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="form-group">
-              <i class="bi bi-telephone-fill"></i>
-              <input 
-                type="text" 
-                class="form-control" 
-                id="telefono" 
-                name="telefono" 
-                placeholder="Teléfono">
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="form-group">
-              <i class="bi bi-toggle-on"></i>
-              <select 
-                class="form-select" 
-                id="estado" 
-                name="estado"
-                required>
-                <option value="">Seleccione estado</option>
-                <option value="ACTIVO">Activo</option>
-                <option value="INACTIVO">Inactivo</option>
-              </select>
-            </div>
-          </div>
-
         </div>
 
-        <div class="d-flex gap-2 mt-2">
-          <button type="submit" class="btn-save">
-            <i class="bi bi-save me-2"></i>
-            Guardar Alumno
-          </button>
-
-          <button type="reset" class="btn btn-outline-secondary btn-clear">
-            <i class="bi bi-x-circle me-2"></i>
-            Limpiar
-          </button>
+        <!-- Campo nombres -->
+        <div class="col-md-4">
+          <div class="form-group">
+            <i class="bi bi-person-fill"></i>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="nombres" 
+              name="nombres" 
+              placeholder="Nombres"
+              value="<?= htmlspecialchars($data['nombres']) ?>"
+              required>
+          </div>
         </div>
 
-      </form>
-    </div>
+        <!-- Campo apellidos -->
+        <div class="col-md-4">
+          <div class="form-group">
+            <i class="bi bi-person-lines-fill"></i>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="apellidos" 
+              name="apellidos" 
+              placeholder="Apellidos"
+              value="<?= htmlspecialchars($data['apellidos']) ?>"
+              required>
+          </div>
+        </div>
 
-    <!-- TABLA -->
-    <div class="card-custom">
-      <h4 class="title">
-        <i class="bi bi-table"></i>
-        Lista de Alumnos
-      </h4>
+        <!-- Campo correo -->
+        <div class="col-md-4">
+          <div class="form-group">
+            <i class="bi bi-envelope-fill"></i>
+            <input 
+              type="email" 
+              class="form-control" 
+              id="correo" 
+              name="correo" 
+              placeholder="Correo electrónico"
+              value="<?= htmlspecialchars($data['correo']) ?>">
+          </div>
+        </div>
 
-      <div class="table-responsive">
-        <table class="table table-hover align-middle">
-          <thead>
-            <tr>
-              <th>ID Alumno</th>
-              <th>Nombres</th>
-              <th>Apellidos</th>
-              <th>Correo</th>
-              <th>Teléfono</th>
-              <th>Estado</th>
-              <th class="text-center">Acciones</th>
-            </tr>
-          </thead>
+        <!-- Campo teléfono -->
+        <div class="col-md-4">
+          <div class="form-group">
+            <i class="bi bi-telephone-fill"></i>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="telefono" 
+              name="telefono" 
+              placeholder="Teléfono"
+              value="<?= htmlspecialchars($data['telefono']) ?>">
+          </div>
+        </div>
 
-          <tbody>
-            <tr>
-              <td>1001</td>
-              <td>Juan Carlos</td>
-              <td>Pérez López</td>
-              <td>juan@correo.com</td>
-              <td>77777777</td>
-              <td>
-                <span class="badge-activo">Activo</span>
-              </td>
-              <td class="text-center">
-                <button class="action-btn edit-btn" title="Editar">
-                  <i class="bi bi-pencil-square"></i>
-                </button>
-                <button class="action-btn delete-btn" title="Eliminar">
-                  <i class="bi bi-trash-fill"></i>
-                </button>
-              </td>
-            </tr>
+        <!-- Campo estado -->
+        <div class="col-md-4">
+          <div class="form-group">
+            <i class="bi bi-toggle-on"></i>
+            <select 
+              class="form-select" 
+              id="estado" 
+              name="estado"
+              required>
+              <option value="">Seleccione estado</option>
+              <option value="ACTIVO" <?= $data['estado'] == 'ACTIVO' ? 'selected' : '' ?>>Activo</option>
+              <option value="INACTIVO" <?= $data['estado'] == 'INACTIVO' ? 'selected' : '' ?>>Inactivo</option>
+            </select>
+          </div>
+        </div>
 
-            <tr>
-              <td>1002</td>
-              <td>María Fernanda</td>
-              <td>Gómez Ruiz</td>
-              <td>maria@correo.com</td>
-              <td>66666666</td>
-              <td>
-                <span class="badge-inactivo">Inactivo</span>
-              </td>
-              <td class="text-center">
-                <button class="action-btn edit-btn" title="Editar">
-                  <i class="bi bi-pencil-square"></i>
-                </button>
-                <button class="action-btn delete-btn" title="Eliminar">
-                  <i class="bi bi-trash-fill"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-
-        </table>
       </div>
-    </div>
 
+      <!-- Campo oculto para indicar edición -->
+      <?php if (isset($_GET['id'])): ?>
+        <input type="hidden" name="accion" value="editar">
+      <?php endif; ?>
+
+      <div class="d-flex gap-2 mt-2">
+
+        <!-- Botón guardar o actualizar -->
+        <button type="submit" class="btn-save">
+          <i class="bi bi-save me-2"></i>
+          <?= isset($_GET['id']) ? 'Actualizar Alumno' : 'Guardar Alumno' ?>
+        </button>
+
+        <!-- Botón limpiar -->
+        <a href="formulario.php" class="btn btn-outline-secondary btn-clear">
+          <i class="bi bi-x-circle me-2"></i>
+          Limpiar
+        </a>
+
+      </div>
+
+    </form>
   </div>
+
+  <!-- Tarjeta de la tabla -->
+  <div class="card-custom">
+
+    <h4 class="title">
+      <i class="bi bi-table"></i>
+      Lista de Alumnos
+    </h4>
+
+    <div class="table-responsive">
+
+      <table class="table table-hover align-middle">
+
+        <thead>
+          <tr>
+            <th>ID Alumno</th>
+            <th>Nombres</th>
+            <th>Apellidos</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <!-- Se recorren todos los alumnos de la base de datos -->
+          <?php foreach ($alumnos as $a): ?>
+
+            <tr>
+              <td><?= htmlspecialchars($a['id_alumno']) ?></td>
+              <td><?= htmlspecialchars($a['nombres']) ?></td>
+              <td><?= htmlspecialchars($a['apellidos']) ?></td>
+              <td><?= htmlspecialchars($a['correo']) ?></td>
+              <td><?= htmlspecialchars($a['telefono']) ?></td>
+
+              <td>
+                <?php if ($a['estado'] == 'ACTIVO'): ?>
+                  <span class="badge-activo">Activo</span>
+                <?php else: ?>
+                  <span class="badge-inactivo">Inactivo</span>
+                <?php endif; ?>
+              </td>
+
+              <td class="text-center">
+
+                <!-- Botón editar -->
+                <a 
+                  href="formulario.php?id=<?= $a['id_alumno'] ?>" 
+                  class="action-btn edit-btn" 
+                  title="Editar">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+
+                <!-- Botón eliminar -->
+                <a 
+                  href="../../controller/AlumnoController.php?eliminar=<?= $a['id_alumno'] ?>" 
+                  class="action-btn delete-btn" 
+                  title="Eliminar"
+                  onclick="return confirm('¿Está seguro de eliminar este alumno?');">
+                  <i class="bi bi-trash-fill"></i>
+                </a>
+
+              </td>
+            </tr>
+
+          <?php endforeach; ?>
+
+        </tbody>
+
+      </table>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
