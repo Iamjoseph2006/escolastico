@@ -25,6 +25,7 @@ $alumnos = $alumno->obtenerTodos();
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro de Alumnos</title>
 
   <!-- Bootstrap para el diseño visual -->
@@ -34,128 +35,356 @@ $alumnos = $alumno->obtenerTodos();
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
   <style>
+    :root {
+      --bg: #f4f7fb;
+      --surface: rgba(255, 255, 255, 0.92);
+      --text: #172033;
+      --muted: #667085;
+      --line: #e6eaf0;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-soft: #eaf1ff;
+      --success: #16a34a;
+      --success-soft: #e9f9ef;
+      --danger: #dc2626;
+      --danger-soft: #fff1f2;
+      --warning: #d97706;
+      --warning-soft: #fffbeb;
+      --shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --radius-sm: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      background-color: #f8f9fb;
-      font-family: 'Segoe UI', sans-serif;
-      padding: 3rem 1rem;
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.13), transparent 32rem),
+        radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.11), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 2rem 1rem 3rem;
     }
 
     .main-container {
-      max-width: 1100px;
-      margin: auto;
+      width: min(1160px, 100%);
+      margin: 0 auto;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      padding: 0.7rem 1rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.76);
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+      backdrop-filter: blur(16px);
+      transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .back-link:hover {
+      border-color: rgba(37, 99, 235, 0.28);
+      color: var(--primary);
+      transform: translateY(-1px);
+      box-shadow: 0 14px 32px rgba(37, 99, 235, 0.12);
     }
 
     .card-custom {
-      background-color: #ffffff;
-      border-radius: 0.75rem;
-      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
-      padding: 2rem;
-      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+      padding: 1.5rem;
+      border: 1px solid rgba(230, 234, 240, 0.95);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .card-custom::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 5px;
+      background: linear-gradient(90deg, var(--primary), #0ea5e9);
     }
 
     .title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin: 0 0 1.6rem;
+      color: var(--text);
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
       text-align: center;
-      margin-bottom: 2rem;
-      font-weight: 600;
-      color: #333;
     }
 
-    .form-control {
-      height: 46px;
-      border-radius: 0.375rem;
-      padding-left: 2.5rem;
-    }
-
-    .form-select {
-      height: 46px;
-      border-radius: 0.375rem;
-      padding-left: 2.5rem;
+    .title i {
+      display: inline-grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 15px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 1.2rem;
     }
 
     .form-group {
       position: relative;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.2rem;
     }
 
     .form-group i {
       position: absolute;
       top: 50%;
-      left: 0.75rem;
-      transform: translateY(-50%);
-      color: #6c757d;
+      left: 1rem;
       z-index: 2;
+      color: var(--muted);
+      transform: translateY(-50%);
+      transition: color 0.2s ease;
+    }
+
+    .form-group:focus-within i {
+      color: var(--primary);
+    }
+
+    .form-control,
+    .form-select {
+      min-height: 52px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background-color: rgba(255, 255, 255, 0.94);
+      color: var(--text);
+      font-size: 0.95rem;
+      padding-left: 2.75rem;
+      box-shadow: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .form-control::placeholder {
+      color: #98a2b3;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      border-color: rgba(37, 99, 235, 0.55);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .form-control[readonly] {
+      background-color: #f8fafc;
+      color: #64748b;
+      cursor: not-allowed;
+    }
+
+    .d-flex.gap-2.mt-2 {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.85rem !important;
+      margin-top: 0.35rem !important;
+    }
+
+    .btn-save,
+    .btn-clear {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      min-height: 52px;
+      border-radius: var(--radius-sm);
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
     }
 
     .btn-save {
-      background-color: #007bff;
-      border: none;
-      color: white;
-      font-weight: 500;
-      padding: 0.75rem;
       width: 100%;
-      border-radius: 0.375rem;
+      border: none;
+      background: linear-gradient(135deg, var(--primary), #0ea5e9);
+      color: #ffffff;
+      padding: 0 1.4rem;
+      box-shadow: 0 14px 30px rgba(37, 99, 235, 0.22);
     }
 
     .btn-save:hover {
-      background-color: #0069d9;
+      background: linear-gradient(135deg, var(--primary-dark), #0284c7);
+      transform: translateY(-1px);
+      box-shadow: 0 18px 36px rgba(37, 99, 235, 0.28);
     }
 
     .btn-clear {
-      width: 100%;
-      font-weight: 500;
-      border-radius: 0.375rem;
-      padding: 0.75rem;
+      width: auto;
+      min-width: 150px;
+      border: 1px solid var(--line) !important;
+      background: #ffffff !important;
+      color: #475467 !important;
+      padding: 0 1.25rem;
+    }
+
+    .btn-clear:hover {
+      border-color: #cbd5e1 !important;
+      background: #f8fafc !important;
+      color: var(--text) !important;
+      transform: translateY(-1px);
+    }
+
+    .table-responsive {
+      padding: 0.15rem;
+    }
+
+    .table {
+      margin: 0;
+      border-collapse: separate;
+      border-spacing: 0 0.55rem;
     }
 
     .table thead th {
-      background-color: #007bff;
-      color: white;
-      font-weight: 500;
-      border: none;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.75rem 1rem;
+      white-space: nowrap;
     }
 
-    .table td, .table th {
+    .table tbody tr {
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.04);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .table-hover tbody tr:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+    }
+
+    .table tbody td {
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: #ffffff;
+      color: #344054;
+      padding: 1rem;
       vertical-align: middle;
     }
 
+    .table tbody td:first-child {
+      border-left: 1px solid var(--line);
+      border-top-left-radius: var(--radius-md);
+      border-bottom-left-radius: var(--radius-md);
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    .table tbody td:last-child {
+      border-right: 1px solid var(--line);
+      border-top-right-radius: var(--radius-md);
+      border-bottom-right-radius: var(--radius-md);
+    }
+
+    .badge-activo,
+    .badge-inactivo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
     .badge-activo {
-      background-color: #198754;
-      color: white;
-      padding: 0.35rem 0.65rem;
-      border-radius: 0.375rem;
-      font-size: 0.85rem;
+      background: var(--success-soft);
+      color: var(--success);
     }
 
     .badge-inactivo {
-      background-color: #dc3545;
-      color: white;
-      padding: 0.35rem 0.65rem;
-      border-radius: 0.375rem;
-      font-size: 0.85rem;
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .badge-activo::before,
+    .badge-inactivo::before {
+      content: "";
+      width: 0.45rem;
+      height: 0.45rem;
+      border-radius: 999px;
+      background: currentColor;
     }
 
     .action-btn {
-      border: none;
+      display: inline-grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      margin: 0 0.12rem;
+      border: 1px solid transparent;
+      border-radius: 12px;
       background: transparent;
-      font-size: 1.2rem;
-      margin: 0 0.25rem;
+      font-size: 1.05rem;
       text-decoration: none;
+      transition: all 0.2s ease;
     }
 
     .edit-btn {
-      color: #ffc107;
+      background: var(--warning-soft);
+      color: var(--warning);
     }
 
     .delete-btn {
-      color: #dc3545;
+      background: var(--danger-soft);
+      color: var(--danger);
     }
 
-    .back-link {
-      text-decoration: none;
-      color: #007bff;
-      font-size: 0.95rem;
-      display: inline-block;
-      margin-bottom: 1rem;
+    .action-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem 0.75rem 2rem;
+      }
+
+      .card-custom {
+        padding: 1.15rem;
+        border-radius: 22px;
+      }
+
+      .title {
+        align-items: flex-start;
+        justify-content: flex-start;
+        text-align: left;
+      }
+
+      .d-flex.gap-2.mt-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-clear {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -187,11 +416,11 @@ $alumnos = $alumno->obtenerTodos();
         <div class="col-md-4">
           <div class="form-group">
             <i class="bi bi-hash"></i>
-            <input 
-              type="number" 
-              class="form-control" 
-              id="id_alumno" 
-              name="id_alumno" 
+            <input
+              type="number"
+              class="form-control"
+              id="id_alumno"
+              name="id_alumno"
               placeholder="Código del alumno"
               value="<?= htmlspecialchars($data['id_alumno']) ?>"
               <?= isset($_GET['id']) ? 'readonly' : '' ?>
@@ -203,11 +432,11 @@ $alumnos = $alumno->obtenerTodos();
         <div class="col-md-4">
           <div class="form-group">
             <i class="bi bi-person-fill"></i>
-            <input 
-              type="text" 
-              class="form-control" 
-              id="nombres" 
-              name="nombres" 
+            <input
+              type="text"
+              class="form-control"
+              id="nombres"
+              name="nombres"
               placeholder="Nombres"
               value="<?= htmlspecialchars($data['nombres']) ?>"
               required>
@@ -218,11 +447,11 @@ $alumnos = $alumno->obtenerTodos();
         <div class="col-md-4">
           <div class="form-group">
             <i class="bi bi-person-lines-fill"></i>
-            <input 
-              type="text" 
-              class="form-control" 
-              id="apellidos" 
-              name="apellidos" 
+            <input
+              type="text"
+              class="form-control"
+              id="apellidos"
+              name="apellidos"
               placeholder="Apellidos"
               value="<?= htmlspecialchars($data['apellidos']) ?>"
               required>
@@ -233,11 +462,11 @@ $alumnos = $alumno->obtenerTodos();
         <div class="col-md-4">
           <div class="form-group">
             <i class="bi bi-envelope-fill"></i>
-            <input 
-              type="email" 
-              class="form-control" 
-              id="correo" 
-              name="correo" 
+            <input
+              type="email"
+              class="form-control"
+              id="correo"
+              name="correo"
               placeholder="Correo electrónico"
               value="<?= htmlspecialchars($data['correo']) ?>">
           </div>
@@ -247,11 +476,11 @@ $alumnos = $alumno->obtenerTodos();
         <div class="col-md-4">
           <div class="form-group">
             <i class="bi bi-telephone-fill"></i>
-            <input 
-              type="text" 
-              class="form-control" 
-              id="telefono" 
-              name="telefono" 
+            <input
+              type="text"
+              class="form-control"
+              id="telefono"
+              name="telefono"
               placeholder="Teléfono"
               value="<?= htmlspecialchars($data['telefono']) ?>">
           </div>
@@ -261,9 +490,9 @@ $alumnos = $alumno->obtenerTodos();
         <div class="col-md-4">
           <div class="form-group">
             <i class="bi bi-toggle-on"></i>
-            <select 
-              class="form-select" 
-              id="estado" 
+            <select
+              class="form-select"
+              id="estado"
               name="estado"
               required>
               <option value="">Seleccione estado</option>
@@ -346,17 +575,17 @@ $alumnos = $alumno->obtenerTodos();
               <td class="text-center">
 
                 <!-- Botón editar -->
-                <a 
-                  href="formulario.php?id=<?= $a['id_alumno'] ?>" 
-                  class="action-btn edit-btn" 
+                <a
+                  href="formulario.php?id=<?= $a['id_alumno'] ?>"
+                  class="action-btn edit-btn"
                   title="Editar">
                   <i class="bi bi-pencil-square"></i>
                 </a>
 
                 <!-- Botón eliminar -->
-                <a 
-                  href="../../controller/AlumnoController.php?eliminar=<?= $a['id_alumno'] ?>" 
-                  class="action-btn delete-btn" 
+                <a
+                  href="../../controller/AlumnoController.php?eliminar=<?= $a['id_alumno'] ?>"
+                  class="action-btn delete-btn"
                   title="Eliminar"
                   onclick="return confirm('¿Está seguro de eliminar este alumno?');">
                   <i class="bi bi-trash-fill"></i>
