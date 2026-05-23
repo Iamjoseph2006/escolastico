@@ -33,7 +33,7 @@ public function __construct()
     }
 
     //metodo obtener todos los alumnos
-    public function obtenerTodos() 
+    public function obtenerTodo() 
     {
         $sql = "SELECT * FROM alumnos ORDER BY id_alumno DESC";
         $stmt = $this->db->prepare($sql);

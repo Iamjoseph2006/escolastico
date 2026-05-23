@@ -1,32 +1,60 @@
 <?php
 
+// Se importa el modelo Nota.
+// Este modelo permite listar, registrar, editar y eliminar notas.
+require_once '../../model/Notas.php';
+
+// Se importa el modelo Alumno.
+// Este modelo permite obtener alumnos para mostrarlos en el select.
 require_once '../../model/Alumno.php';
 
+
+// Se crea un objeto del modelo Nota.
+$nota = new Notas();
+
+// Se crea un objeto del modelo Alumno.
 $alumno = new Alumno();
 
+
+// Arreglo con valores vacíos.
+// Sirve para que el formulario funcione al registrar y al editar.
 $data = [
-    'id_alumno' => '',
-    'nombres' => '',
-    'apellidos' => '',
-    'correo' => '',
-    'telefono' => '',
-    'estado' => ''
+    'id_nota' => '',
+    'materia' => '',
+    'nota1' => '',
+    'nota2' => '',
+    'nota3' => '',
+    'npromedio' => '',
+    'id_alumno' => ''
 ];
 
-if (isset($_GET['id'])) {
-    $data = $alumno->obtenerPorId($_GET['id']) ?? $data;
 
+// Si existe un ID en la URL, significa que se está editando una nota.
+// Ejemplo: formulario.php?id=2
+if (isset($_GET['id'])) {
+
+    // Se obtiene la nota por ID.
+    // Si no encuentra datos, mantiene el arreglo vacío.
+    $data = $nota->obtenerPorId($_GET['id']) ?? $data;
 }
 
+
+// Se obtienen todas las notas registradas para mostrarlas en la tabla.
+$notas = $nota->obtenerTodos();
+
+
+// Se obtienen todos los alumnos registrados.
+// Esto sirve para llenar el select de alumnos.
 $alumnos = $alumno->obtenerTodo();
 
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registro de Alumnos</title>
+  <title>Registro de Notas</title>
 
   <!-- Bootstrap para el diseño visual -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -44,8 +72,6 @@ $alumnos = $alumno->obtenerTodo();
       --primary: #2563eb;
       --primary-dark: #1d4ed8;
       --primary-soft: #eaf1ff;
-      --success: #16a34a;
-      --success-soft: #e9f9ef;
       --danger: #dc2626;
       --danger-soft: #fff1f2;
       --warning: #d97706;
@@ -195,6 +221,12 @@ $alumnos = $alumno->obtenerTodo();
       cursor: not-allowed;
     }
 
+    .promedio-box {
+      background-color: #f8fafc;
+      color: var(--text);
+      font-weight: 800;
+    }
+
     .d-flex.gap-2.mt-2 {
       display: grid !important;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -302,35 +334,9 @@ $alumnos = $alumno->obtenerTodo();
       border-bottom-right-radius: var(--radius-md);
     }
 
-    .badge-activo,
-    .badge-inactivo {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.45rem 0.7rem;
-      border-radius: 999px;
-      font-size: 0.82rem;
+    .promedio-tabla {
       font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .badge-activo {
-      background: var(--success-soft);
-      color: var(--success);
-    }
-
-    .badge-inactivo {
-      background: var(--danger-soft);
-      color: var(--danger);
-    }
-
-    .badge-activo::before,
-    .badge-inactivo::before {
-      content: "";
-      width: 0.45rem;
-      height: 0.45rem;
-      border-radius: 999px;
-      background: currentColor;
+      color: #344054;
     }
 
     .action-btn {
@@ -403,118 +409,135 @@ $alumnos = $alumno->obtenerTodo();
 
     <!-- Título dinámico: cambia entre Registro y Editar -->
     <h4 class="title">
-      <i class="bi bi-person-plus-fill"></i>
-      <?= isset($_GET['id']) ? 'Editar Alumno' : 'Registro de Alumno' ?>
+      <i class="bi bi-journal-check"></i>
+      <?= isset($_GET['id']) ? 'Editar Nota' : 'Registro de Nota' ?>
     </h4>
 
-    <!-- Formulario que envía los datos al controlador -->
-    <form action="../../controller/AlumnoController.php" method="POST">
+    <!-- Formulario que enviará los datos al controlador de notas -->
+    <form action="../../controller/NotasController.php" method="POST" onsubmit="calcularPromedio()">
+
+      <!-- Si se está editando, se envía el id_nota oculto -->
+      <?php if (isset($_GET['id'])): ?>
+        <input type="hidden" name="id_nota" value="<?= htmlspecialchars($data['id_nota']) ?>">
+        <input type="hidden" name="accion" value="editar">
+      <?php endif; ?>
 
       <div class="row">
 
-        <!-- Campo ID del alumno -->
-        <div class="col-md-4">
-          <div class="form-group">
-            <i class="bi bi-hash"></i>
-            <input
-              type="number"
-              class="form-control"
-              id="id_alumno"
-              name="id_alumno"
-              placeholder="Código del alumno"
-              value="<?= htmlspecialchars($data['id_alumno']) ?>"
-              <?= isset($_GET['id']) ? 'readonly' : '' ?>
-              required>
-          </div>
-        </div>
-
-        <!-- Campo nombres -->
-        <div class="col-md-4">
+        <!-- SELECT DE ALUMNO -->
+        <div class="col-md-6">
           <div class="form-group">
             <i class="bi bi-person-fill"></i>
-            <input
-              type="text"
-              class="form-control"
-              id="nombres"
-              name="nombres"
-              placeholder="Nombres"
-              value="<?= htmlspecialchars($data['nombres']) ?>"
-              required>
-          </div>
-        </div>
+            <select name="id_alumno" class="form-select" required>
+              <option value="">Seleccione un alumno</option>
 
-        <!-- Campo apellidos -->
-        <div class="col-md-4">
-          <div class="form-group">
-            <i class="bi bi-person-lines-fill"></i>
-            <input
-              type="text"
-              class="form-control"
-              id="apellidos"
-              name="apellidos"
-              placeholder="Apellidos"
-              value="<?= htmlspecialchars($data['apellidos']) ?>"
-              required>
-          </div>
-        </div>
+              <!-- Se recorren todos los alumnos para llenar el select -->
+              <?php foreach ($alumnos as $a): ?>
+                <option
+                  value="<?= htmlspecialchars($a['id_alumno']) ?>"
+                  <?= $data['id_alumno'] == $a['id_alumno'] ? 'selected' : '' ?>>
+                  <?= htmlspecialchars($a['nombres'] . ' ' . $a['apellidos']) ?>
+                </option>
+              <?php endforeach; ?>
 
-        <!-- Campo correo -->
-        <div class="col-md-4">
-          <div class="form-group">
-            <i class="bi bi-envelope-fill"></i>
-            <input
-              type="email"
-              class="form-control"
-              id="correo"
-              name="correo"
-              placeholder="Correo electrónico"
-              value="<?= htmlspecialchars($data['correo']) ?>">
-          </div>
-        </div>
-
-        <!-- Campo teléfono -->
-        <div class="col-md-4">
-          <div class="form-group">
-            <i class="bi bi-telephone-fill"></i>
-            <input
-              type="text"
-              class="form-control"
-              id="telefono"
-              name="telefono"
-              placeholder="Teléfono"
-              value="<?= htmlspecialchars($data['telefono']) ?>">
-          </div>
-        </div>
-
-        <!-- Campo estado -->
-        <div class="col-md-4">
-          <div class="form-group">
-            <i class="bi bi-toggle-on"></i>
-            <select
-              class="form-select"
-              id="estado"
-              name="estado"
-              required>
-              <option value="">Seleccione estado</option>
-              <option value="ACTIVO" <?= $data['estado'] == 'ACTIVO' ? 'selected' : '' ?>>Activo</option>
-              <option value="INACTIVO" <?= $data['estado'] == 'INACTIVO' ? 'selected' : '' ?>>Inactivo</option>
             </select>
           </div>
         </div>
 
-      </div>
+        <!-- CAMPO MATERIA -->
+        <div class="col-md-6">
+          <div class="form-group">
+            <i class="bi bi-book-fill"></i>
+            <input
+              type="text"
+              name="materia"
+              class="form-control"
+              placeholder="Materia"
+              value="<?= htmlspecialchars($data['materia']) ?>"
+              required>
+          </div>
+        </div>
 
-      <!-- Campo oculto para indicar edición -->
-      <?php if (isset($_GET['id'])): ?>
-        <input type="hidden" name="accion" value="editar">
-      <?php endif; ?>
+        <!-- CAMPO NOTA 1 -->
+        <div class="col-md-3">
+          <div class="form-group">
+            <i class="bi bi-clipboard-data"></i>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              name="nota1"
+              id="nota1"
+              class="form-control"
+              placeholder="Nota 1"
+              value="<?= htmlspecialchars($data['nota1']) ?>"
+              oninput="calcularPromedio()"
+              required>
+          </div>
+        </div>
+
+        <!-- CAMPO NOTA 2 -->
+        <div class="col-md-3">
+          <div class="form-group">
+            <i class="bi bi-clipboard-data"></i>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              name="nota2"
+              id="nota2"
+              class="form-control"
+              placeholder="Nota 2"
+              value="<?= htmlspecialchars($data['nota2']) ?>"
+              oninput="calcularPromedio()"
+              required>
+          </div>
+        </div>
+
+        <!-- CAMPO NOTA 3 -->
+        <div class="col-md-3">
+          <div class="form-group">
+            <i class="bi bi-clipboard-data"></i>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              name="nota3"
+              id="nota3"
+              class="form-control"
+              placeholder="Nota 3"
+              value="<?= htmlspecialchars($data['nota3']) ?>"
+              oninput="calcularPromedio()"
+              required>
+          </div>
+        </div>
+
+        <!-- CAMPO PROMEDIO -->
+        <div class="col-md-3">
+          <div class="form-group">
+            <i class="bi bi-calculator-fill"></i>
+            <input
+              type="text"
+              name="npromedio"
+              id="npromedio"
+              class="form-control promedio-box"
+              placeholder="Promedio"
+              value="<?= htmlspecialchars($data['npromedio']) ?>"
+              readonly>
+          </div>
+        </div>
+
+      </div>
 
       <div class="d-flex gap-2 mt-2">
 
         <!-- Botón guardar o actualizar -->
         <button type="submit" class="btn-save">
           <i class="bi bi-save me-2"></i>
-          <?= isset($_GET['id']) ? 'Actualizar Alumno' : 'Guardar Alumno' ?>
+          <?= isset($_GET['id']) ? 'Actualizar Nota' : 'Guardar Nota' ?>
         </button>
 
         <!-- Botón limpiar -->
@@ -533,7 +556,7 @@ $alumnos = $alumno->obtenerTodo();
 
     <h4 class="title">
       <i class="bi bi-table"></i>
-      Lista de Alumnos
+      Lista de Notas
     </h4>
 
     <div class="table-responsive">
@@ -542,41 +565,54 @@ $alumnos = $alumno->obtenerTodo();
 
         <thead>
           <tr>
-            <th>ID Alumno</th>
-            <th>Nombres</th>
-            <th>Apellidos</th>
-            <th>Correo</th>
-            <th>Teléfono</th>
-            <th>Estado</th>
+            <th>ID Nota</th>
+            <th>Alumno</th>
+            <th>Materia</th>
+            <th>Nota 1</th>
+            <th>Nota 2</th>
+            <th>Nota 3</th>
+            <th>Promedio</th>
             <th class="text-center">Acciones</th>
           </tr>
         </thead>
 
         <tbody>
 
-          <!-- Se recorren todos los alumnos de la base de datos -->
-          <?php foreach ($alumnos as $a): ?>
+          <!-- Se recorren todas las notas registradas -->
+          <?php foreach ($notas as $n): ?>
 
             <tr>
-              <td><?= htmlspecialchars($a['id_alumno']) ?></td>
-              <td><?= htmlspecialchars($a['nombres']) ?></td>
-              <td><?= htmlspecialchars($a['apellidos']) ?></td>
-              <td><?= htmlspecialchars($a['correo']) ?></td>
-              <td><?= htmlspecialchars($a['telefono']) ?></td>
+              <td><?= htmlspecialchars($n['id_nota']) ?></td>
 
               <td>
-                <?php if ($a['estado'] == 'ACTIVO'): ?>
-                  <span class="badge-activo">Activo</span>
-                <?php else: ?>
-                  <span class="badge-inactivo">Inactivo</span>
-                <?php endif; ?>
+                <?= htmlspecialchars($n['nombres'] . ' ' . $n['apellidos']) ?>
+              </td>
+
+              <td><?= htmlspecialchars($n['materia']) ?></td>
+
+              <td>
+                <?= htmlspecialchars($n['nota1']) ?>
+              </td>
+
+              <td>
+                <?= htmlspecialchars($n['nota2']) ?>
+              </td>
+
+              <td>
+                <?= htmlspecialchars($n['nota3']) ?>
+              </td>
+
+              <td>
+                <span class="promedio-tabla">
+                  <?= number_format($n['npromedio'], 2) ?>
+                </span>
               </td>
 
               <td class="text-center">
 
                 <!-- Botón editar -->
                 <a
-                  href="formulario.php?id=<?= $a['id_alumno'] ?>"
+                  href="formulario.php?id=<?= htmlspecialchars($n['id_nota']) ?>"
                   class="action-btn edit-btn"
                   title="Editar">
                   <i class="bi bi-pencil-square"></i>
@@ -584,10 +620,10 @@ $alumnos = $alumno->obtenerTodo();
 
                 <!-- Botón eliminar -->
                 <a
-                  href="../../controller/AlumnoController.php?eliminar=<?= $a['id_alumno'] ?>"
+                  href="../../controller/NotasController.php?eliminar=<?= htmlspecialchars($n['id_nota']) ?>"
                   class="action-btn delete-btn"
                   title="Eliminar"
-                  onclick="return confirm('¿Está seguro de eliminar este alumno?');">
+                  onclick="return confirm('¿Está seguro de eliminar esta nota?');">
                   <i class="bi bi-trash-fill"></i>
                 </a>
 
@@ -604,6 +640,34 @@ $alumnos = $alumno->obtenerTodo();
   </div>
 
 </div>
+
+<script>
+  // Función para calcular el promedio de las tres notas.
+  // Esta operación se realiza en JavaScript antes de enviar a PHP.
+  function calcularPromedio() {
+
+    // Se obtiene la nota 1 desde el input.
+    // parseFloat convierte el valor a número decimal.
+    // Si está vacío, se toma como 0.
+    let nota1 = parseFloat(document.getElementById('nota1').value) || 0;
+
+    // Se obtiene la nota 2.
+    let nota2 = parseFloat(document.getElementById('nota2').value) || 0;
+
+    // Se obtiene la nota 3.
+    let nota3 = parseFloat(document.getElementById('nota3').value) || 0;
+
+    // Se calcula el promedio.
+    let npromedio = (nota1 + nota2 + nota3) / 3;
+
+    // Se coloca el resultado en el input promedio.
+    document.getElementById('npromedio').value = npromedio.toFixed(2);
+  }
+
+  // Se ejecuta la función al cargar la página.
+  // Esto sirve cuando se abre el formulario en modo edición.
+  calcularPromedio();
+</script>
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
