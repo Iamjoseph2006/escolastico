@@ -71,7 +71,7 @@ class Notas{
                 nota1 = ?,
                 nota2 = ?,
                 nota3 = ?,
-                npromedio = ?
+                npromedio = ?,
                 id_alumno = ?
                 WHERE id_nota = ?";
         $stmt = $this->db->prepare($sql);
