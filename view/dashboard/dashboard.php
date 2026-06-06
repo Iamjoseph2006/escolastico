@@ -397,14 +397,6 @@ if (is_alumno()) {
                     </div>
                     <span class="module-icon"><i class="bi bi-calendar-check-fill"></i></span>
                 </a>
-
-                <a href="perfil.php" class="module">
-                    <div>
-                        <p class="module-title">Mi Perfil</p>
-                        <p class="module-text">Datos personales</p>
-                    </div>
-                    <span class="module-icon"><i class="bi bi-person-circle"></i></span>
-                </a>
             <?php endif; ?>
         </div>
     </section>

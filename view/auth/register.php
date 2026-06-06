@@ -243,6 +243,43 @@ unset($_SESSION['register_success']);
         .password-strength.strong {
             color: var(--success);
         }
+
+        .email-status {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: none;
+        }
+
+        .email-status.validando {
+            color: #f59e0b;
+            display: block;
+        }
+
+        .email-status.error {
+            color: var(--danger);
+            display: block;
+        }
+
+        .email-status.exito {
+            color: var(--success);
+            display: block;
+        }
+
+        .form-control.error {
+            border-color: rgba(220, 38, 38, 0.4);
+            background-color: rgba(220, 38, 38, 0.05);
+        }
+
+        .form-control.exito {
+            border-color: rgba(22, 163, 74, 0.4);
+            background-color: rgba(22, 163, 74, 0.05);
+        }
+
+        .btn-register:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -252,7 +289,7 @@ unset($_SESSION['register_success']);
         <i class="bi bi-person-plus-fill"></i>
         Crear Cuenta
     </h1>
-    <p class="subtitle">Registrate en Escolastico</p>
+    <p class="subtitle">Registrate usando tu correo de alumno</p>
 
     <?php if ($error): ?>
         <div class="alert alert-custom alert-danger-custom py-2" role="alert">
@@ -269,41 +306,18 @@ unset($_SESSION['register_success']);
     <?php endif; ?>
 
     <form action="../../controller/RegisterController.php" method="POST" id="registerForm">
-        <div class="form-row">
-            <div class="form-group">
-                <i class="bi bi-person-fill"></i>
-                <input
-                    type="text"
-                    class="form-control"
-                    name="nombre"
-                    placeholder="Nombre"
-                    autocomplete="given-name"
-                    required
-                >
-            </div>
-            <div class="form-group">
-                <i class="bi bi-person-fill"></i>
-                <input
-                    type="text"
-                    class="form-control"
-                    name="apellido"
-                    placeholder="Apellido"
-                    autocomplete="family-name"
-                    required
-                >
-            </div>
-        </div>
-
         <div class="form-group">
             <i class="bi bi-envelope-fill"></i>
             <input
                 type="email"
                 class="form-control"
+                id="email"
                 name="email"
-                placeholder="Correo electronico"
+                placeholder="Correo electronico registrado"
                 autocomplete="email"
                 required
             >
+            <div id="emailStatus" class="email-status"></div>
         </div>
 
         <div class="form-group">
@@ -311,6 +325,7 @@ unset($_SESSION['register_success']);
             <input
                 type="text"
                 class="form-control"
+                id="usuario"
                 name="usuario"
                 placeholder="Usuario"
                 autocomplete="username"
@@ -323,9 +338,9 @@ unset($_SESSION['register_success']);
             <input
                 type="password"
                 class="form-control"
-                name="password"
                 id="password"
-                placeholder="Contrasena"
+                name="password"
+                placeholder="Contraseña"
                 autocomplete="new-password"
                 required
                 minlength="6"
@@ -337,16 +352,16 @@ unset($_SESSION['register_success']);
             <input
                 type="password"
                 class="form-control"
-                name="confirmar_password"
                 id="confirmar_password"
-                placeholder="Confirmar contrasena"
+                name="confirmar_password"
+                placeholder="Confirmar contraseña"
                 autocomplete="new-password"
                 required
                 minlength="6"
             >
         </div>
 
-        <button type="submit" class="btn-register">
+        <button type="submit" class="btn-register" id="submitBtn">
             <i class="bi bi-person-check-fill"></i>
             Registrarse
         </button>
@@ -359,11 +374,86 @@ unset($_SESSION['register_success']);
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Validación de contraseñas coincidentes
-    document.getElementById('registerForm').addEventListener('submit', function(e) {
+    const emailInput = document.getElementById('email');
+    const emailStatus = document.getElementById('emailStatus');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('registerForm');
+    
+    let emailValido = false;
+
+    // Validar email cuando el usuario termina de escribir
+    emailInput.addEventListener('blur', async function() {
+        const email = this.value.trim();
+
+        if (!email) {
+            emailStatus.innerHTML = '';
+            emailStatus.className = 'email-status';
+            emailInput.className = 'form-control';
+            emailValido = false;
+            submitBtn.disabled = true;
+            return;
+        }
+
+        // Mostrar estado de validación
+        emailStatus.innerHTML = '⏳ Validando correo...';
+        emailStatus.className = 'email-status validando';
+        emailInput.className = 'form-control';
+
+        try {
+            const formData = new FormData();
+            formData.append('email', email);
+
+            const response = await fetch('../../controller/ValidarEmailController.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.valido) {
+                emailStatus.innerHTML = '✓ ' + data.mensaje;
+                emailStatus.className = 'email-status exito';
+                emailInput.className = 'form-control exito';
+                emailValido = true;
+                submitBtn.disabled = false;
+            } else {
+                emailStatus.innerHTML = '✗ ' + data.mensaje;
+                emailStatus.className = 'email-status error';
+                emailInput.className = 'form-control error';
+                emailValido = false;
+                submitBtn.disabled = true;
+            }
+        } catch (error) {
+            emailStatus.innerHTML = 'Error al validar correo';
+            emailStatus.className = 'email-status error';
+            emailInput.className = 'form-control error';
+            emailValido = false;
+            submitBtn.disabled = true;
+        }
+    });
+
+    // Validar al presionar el botón enviar
+    form.addEventListener('submit', function(e) {
+        const email = emailInput.value.trim();
         const password = document.getElementById('password').value;
         const confirmar = document.getElementById('confirmar_password').value;
+        const usuario = document.getElementById('usuario').value.trim();
 
+        // Verificar que el email fue validado
+        if (!emailValido) {
+            e.preventDefault();
+            alert('Por favor verifica que tu correo sea válido');
+            return false;
+        }
+
+        // Validar usuario
+        if (usuario.length < 3) {
+            e.preventDefault();
+            alert('El usuario debe tener al menos 3 caracteres');
+            return false;
+        }
+
+        // Validar contraseñas
         if (password !== confirmar) {
             e.preventDefault();
             alert('Las contraseñas no coinciden');
@@ -376,6 +466,9 @@ unset($_SESSION['register_success']);
             return false;
         }
     });
+
+    // Desabilitar botón al inicio
+    submitBtn.disabled = true;
 </script>
 </body>
 </html>

@@ -89,6 +89,15 @@ public function __construct()
         $stmt->execute([$id_alumno]);//2
         return $stmt->fetch(PDO::FETCH_ASSOC);//solo un registro
 }
+    public function obtenerPorCorreo($correo)
+    {
+         $sql = "SELECT id_alumno, nombres, apellidos, correo, telefono, estado 
+                 FROM alumnos WHERE correo = ? AND estado = 'activo'";
+         $stmt = $this->db->prepare($sql);
+         $stmt->execute([$correo]);
+         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }
 
 ?>
+

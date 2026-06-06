@@ -423,9 +423,9 @@ $alumnos = $alumno->obtenerTodo();
               class="form-control"
               id="id_alumno"
               name="id_alumno"
-              placeholder="Código del alumno (auto)"
+              placeholder="Código del alumno"
               value="<?= htmlspecialchars($data['id_alumno'] ?? '') ?>"
-              <?= isset($_GET['id']) ? 'readonly' : 'disabled' ?>
+              <?= isset($_GET['id']) ? 'readonly' : '' ?>
               >
           </div>
         </div>

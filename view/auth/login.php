@@ -206,7 +206,7 @@ unset($_SESSION['login_error']);
                 type="password"
                 class="form-control"
                 name="password"
-                placeholder="Contrasena"
+                placeholder="Contraseña"
                 autocomplete="current-password"
                 required
             >

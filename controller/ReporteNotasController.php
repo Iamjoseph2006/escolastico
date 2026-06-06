@@ -37,7 +37,7 @@ class ReporteNotasController {
 
         // Información del alumno
         $pdf->SetFont('Arial', 'B', 12);
-        $pdf->Cell(0, 8, "INFORMACIÓN DEL ALUMNO", 0, 1);
+        $pdf->Cell(0, 8,utf8_decode("INFORMACIÓN DEL ALUMNO"), 0, 1);
         $pdf->Ln(2);
 
         $pdf->SetFont('Arial', '', 11);
@@ -54,7 +54,7 @@ class ReporteNotasController {
 
         // Información de la nota
         $pdf->SetFont('Arial', 'B', 12);
-        $pdf->Cell(0, 8, "INFORMACIÓN DE LA NOTA", 0, 1);
+        $pdf->Cell(0, 8, utf8_decode("INFORMACIÓN DE LA NOTA"), 0, 1);
         $pdf->Ln(2);
 
         // Tabla de notas

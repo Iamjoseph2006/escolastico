@@ -1,17 +1,16 @@
 <?php
 session_start();
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../model/Alumno.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nombre = trim($_POST['nombre'] ?? '');
-    $apellido = trim($_POST['apellido'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $usuario = trim($_POST['usuario'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirmar_password = $_POST['confirmar_password'] ?? '';
 
     // Validaciones
-    if (empty($nombre) || empty($apellido) || empty($email) || empty($usuario) || empty($password)) {
+    if (empty($email) || empty($usuario) || empty($password)) {
         $_SESSION['register_error'] = 'Todos los campos son obligatorios';
         header('Location: ../view/auth/register.php');
         exit;
@@ -44,49 +43,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $db = Database::connect();
 
-        // Verificar si el usuario ya existe
-        $sqlCheck = "SELECT COUNT(*) as count FROM usuarios WHERE usuario = ? OR correo = ?";
-        $stmtCheck = $db->prepare($sqlCheck);
-        $stmtCheck->execute([$usuario, $email]);
-        $result = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+        // Buscar si el alumno existe en la base de datos
+        $alumnoModel = new Alumno();
+        $alumno = $alumnoModel->obtenerPorCorreo($email);
 
-        if ($result['count'] > 0) {
-            $_SESSION['register_error'] = 'El usuario o correo ya esta registrado';
+        if (!$alumno) {
+            $_SESSION['register_error'] = 'El correo no esta registrado en el sistema. Contacta a la secretaria.';
             header('Location: ../view/auth/register.php');
             exit;
         }
 
-        // Iniciar transacción
-        $db->beginTransaction();
+        // Verificar si el usuario ya existe
+        $sqlCheck = "SELECT COUNT(*) as count FROM usuarios WHERE usuario = ? OR (correo = ? AND id_alumno = ?)";
+        $stmtCheck = $db->prepare($sqlCheck);
+        $stmtCheck->execute([$usuario, $email, $alumno['id_alumno']]);
+        $result = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
-        // 1. Insertar nuevo alumno
-        $sqlAlumno = "INSERT INTO alumnos (nombres, apellidos, correo, estado) 
-                      VALUES (?, ?, ?, 'activo')";
-        $stmtAlumno = $db->prepare($sqlAlumno);
-        $stmtAlumno->execute([$nombre, $apellido, $email]);
-        
-        $idAlumno = $db->lastInsertId();
+        if ($result['count'] > 0) {
+            $_SESSION['register_error'] = 'El usuario ya esta registrado';
+            header('Location: ../view/auth/register.php');
+            exit;
+        }
 
-        // 2. Insertar nuevo usuario vinculado al alumno
+        // Insertar nuevo usuario vinculado al alumno existente
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
         $sqlUsuario = "INSERT INTO usuarios (nombre, usuario, correo, password, rol, id_alumno, estado) 
                        VALUES (?, ?, ?, ?, 'alumno', ?, 'activo')";
 
         $stmtUsuario = $db->prepare($sqlUsuario);
-        $stmtUsuario->execute([$nombre . ' ' . $apellido, $usuario, $email, $passwordHash, $idAlumno]);
+        $stmtUsuario->execute([$alumno['nombres'] . ' ' . $alumno['apellidos'], $usuario, $email, $passwordHash, $alumno['id_alumno']]);
 
-        // Confirmar transacción
-        $db->commit();
-
-        $_SESSION['register_success'] = 'Registro exitoso. Por favor inicia sesión';
+        // Almacenar los datos del alumno en la sesión
+        $_SESSION['alumno_registrado'] = $alumno;
+        $_SESSION['register_success'] = 'Registro exitoso. Bienvenido ' . $alumno['nombres'] . ' ' . $alumno['apellidos'] . '. Por favor inicia sesión';
         header('Location: ../view/auth/login.php');
         exit;
 
     } catch (PDOException $e) {
-        // Revertir transacción en caso de error
-        if ($db->inTransaction()) {
-            $db->rollBack();
-        }
         $_SESSION['register_error'] = 'Error al registrar el usuario. Intenta mas tarde';
         header('Location: ../view/auth/register.php');
         exit;
