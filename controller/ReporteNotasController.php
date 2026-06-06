@@ -1,10 +1,12 @@
 <?php
+require_once __DIR__ . '/../config/Auth.php';
 require_once __DIR__ . '/../model/Notas.php';
 require_once __DIR__ . '/../libs/fpdf/fpdf.php';
 
 class ReporteNotasController {
 
     public function reporte() {
+        require_alumno_or_secretaria();
         // Validar ID
         $id_nota = isset($_GET['id']) ? (int)$_GET['id'] : 0;
         if ($id_nota <= 0) die("ID inválido");
@@ -14,6 +16,7 @@ class ReporteNotasController {
         $data = $notasModel->obtenerPorIdParaReporte($id_nota);
 
         if (!$data) die("No se encontró la nota con ID: $id_nota");
+        if (!can_access_alumno($data['id_alumno'])) deny_access();
 
         // Crear PDF
         $pdf = new FPDF();
@@ -88,7 +91,7 @@ class ReporteNotasController {
         // Pie de página
         $pdf->SetFont('Arial', 'I', 9);
         $pdf->SetTextColor(100, 100, 100);
-        $pdf->Cell(0, 6, 'ID Nota: ' . $data['id_nota'] . ' | Generado el: ' . date('d/m/Y H:i'), 0, 1, 'L');
+        $pdf->Cell(0, 6, 'Generado el: ' . date('d/m/Y H:i'), 0, 1, 'L');
 
         $pdf->Ln(15);
         $pdf->SetFont('Arial', '', 10);
@@ -97,7 +100,7 @@ class ReporteNotasController {
         $pdf->Cell(0, 6, 'Firma del Docente', 0, 1, 'C');
 
         // Salida PDF
-        $pdf->Output('Reporte_Notas_' . $data['id_nota'] . '.pdf', 'D');
+        $pdf->Output();
     }
 }
 

@@ -1,4 +1,6 @@
 <?php
+require_once '../../config/Auth.php';
+require_secretaria();
 
 require_once '../../model/Asistencia.php';
 require_once '../../model/Alumno.php';

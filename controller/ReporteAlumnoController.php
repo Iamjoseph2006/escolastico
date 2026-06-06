@@ -1,9 +1,11 @@
 <?php
+require_once __DIR__ . '/../config/Auth.php';
 require_once __DIR__ . '/../model/Alumno.php';
 require_once __DIR__ . '/../libs/fpdf/fpdf.php';
 class ReporteAlumnoController {
 
     public function reporte() {
+        require_alumno_or_secretaria();
         // Validar ID
         $id_alumno = isset($_GET['id']) ? (int)$_GET['id'] : 0;
         if ($id_alumno <= 0) die("ID inválido");
@@ -13,6 +15,7 @@ class ReporteAlumnoController {
         $data = $alumnoModel->obtenerPorIdParaReporte($id_alumno);
 
         if (!$data) die("No se encontró el alumno con ID: $id_alumno");
+        if (!can_access_alumno($data['id_alumno'])) deny_access();
 
         // Crear PDF
         $pdf = new FPDF();

@@ -1,4 +1,6 @@
 <?php
+require_once '../../config/Auth.php';
+require_secretaria();
 
 // Se importa el modelo Nota.
 // Este modelo permite listar, registrar, editar y eliminar notas.

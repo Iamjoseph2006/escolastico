@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__.'/../config/Auth.php';
+require_secretaria();
 require_once __DIR__.'/../model/Notas.php';
 
 $nota = new Notas();

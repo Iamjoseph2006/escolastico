@@ -17,16 +17,15 @@ public function __construct()
     public function crear ($data) 
     {
         $sql = "INSERT INTO alumnos 
-        (id_alumno, nombres, apellidos, correo, telefono, estado) 
-        values (?, ?, ?, ?, ?, ?)";
+        (nombres, apellidos, correo, telefono, estado) 
+        values (?, ?, ?, ?, ?)";
 
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
-            $data['id_alumno'],
             $data['nombres'],
             $data['apellidos'],
             $data['correo'],
-            $data['telefono'],
+            $data['telefono'] ?? null,
             $data['estado']
         ]);
 

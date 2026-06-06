@@ -72,6 +72,23 @@ CREATE TABLE `notas` (
   `id_alumno` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `usuarios`
+--
+
+CREATE TABLE `usuarios` (
+  `id_usuario` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `usuario` varchar(50) NOT NULL,
+  `correo` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `rol` enum('secretaria','alumno') NOT NULL,
+  `id_alumno` int(11) DEFAULT NULL,
+  `estado` enum('activo','inactivo') NOT NULL DEFAULT 'activo',
+  `creado_en` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 --
 -- Índices para tablas volcadas
 --
@@ -95,10 +112,24 @@ ALTER TABLE `asistencias`
 ALTER TABLE `notas`
   ADD PRIMARY KEY (`id_nota`),
   ADD KEY `fk_notas_alumno` (`id_alumno`);
+--
+-- Indices de la tabla `usuarios`
+--
+ALTER TABLE `usuarios`
+  ADD PRIMARY KEY (`id_usuario`),
+  ADD UNIQUE KEY `uk_usuarios_usuario` (`usuario`),
+  ADD UNIQUE KEY `uk_usuarios_correo` (`correo`),
+  ADD KEY `fk_usuarios_alumno` (`id_alumno`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
 --
+
+--
+-- AUTO_INCREMENT de la tabla `alumnos`
+--
+ALTER TABLE `alumnos`
+  MODIFY `id_alumno` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `asistencias`
@@ -111,6 +142,11 @@ ALTER TABLE `asistencias`
 --
 ALTER TABLE `notas`
   MODIFY `id_nota` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT de la tabla `usuarios`
+--
+ALTER TABLE `usuarios`
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Restricciones para tablas volcadas
@@ -127,6 +163,25 @@ ALTER TABLE `asistencias`
 --
 ALTER TABLE `notas`
   ADD CONSTRAINT `fk_notas_alumno` FOREIGN KEY (`id_alumno`) REFERENCES `alumnos` (`id_alumno`) ON DELETE CASCADE ON UPDATE CASCADE;
+--
+-- Filtros para la tabla `usuarios`
+--
+ALTER TABLE `usuarios`
+  ADD CONSTRAINT `fk_usuarios_alumno` FOREIGN KEY (`id_alumno`) REFERENCES `alumnos` (`id_alumno`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Usuarios iniciales
+-- Secretaria: usuario secretaria / contrasena 123456
+-- Alumno: usuario alumno / contrasena alumno123
+--
+INSERT INTO `usuarios` (`nombre`, `usuario`, `correo`, `password`, `rol`, `id_alumno`, `estado`) VALUES
+('Secretaria', 'secretaria', 'secretaria@escolastico.local', '$2y$10$gyCdF/9bCsHjBpjd0WRX6unF1rdywED.xts2eeX5Rnbv7tnK5tLBC', 'secretaria', NULL, 'activo');
+
+INSERT INTO `usuarios` (`nombre`, `usuario`, `correo`, `password`, `rol`, `id_alumno`, `estado`)
+SELECT CONCAT(`nombres`, ' ', `apellidos`), 'alumno', `correo`, '$2y$10$OjinnAoqppi06bj9Hl1gAuF4xfG8hWljuZCQpq4AzY46I/UqFrxKW', 'alumno', `id_alumno`, 'activo'
+FROM `alumnos`
+ORDER BY `id_alumno` ASC
+LIMIT 1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

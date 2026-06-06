@@ -1,4 +1,6 @@
 <?php
+require_once '../../config/Auth.php';
+require_secretaria();
 
 require_once '../../model/Alumno.php';
 
@@ -421,10 +423,10 @@ $alumnos = $alumno->obtenerTodo();
               class="form-control"
               id="id_alumno"
               name="id_alumno"
-              placeholder="Código del alumno"
-              value="<?= htmlspecialchars($data['id_alumno']) ?>"
-              <?= isset($_GET['id']) ? 'readonly' : '' ?>
-              required>
+              placeholder="Código del alumno (auto)"
+              value="<?= htmlspecialchars($data['id_alumno'] ?? '') ?>"
+              <?= isset($_GET['id']) ? 'readonly' : 'disabled' ?>
+              >
           </div>
         </div>
 

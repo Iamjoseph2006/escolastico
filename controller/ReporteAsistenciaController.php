@@ -1,10 +1,12 @@
 <?php
+require_once __DIR__ . '/../config/Auth.php';
 require_once __DIR__ . '/../model/Asistencia.php';
 require_once __DIR__ . '/../libs/fpdf/fpdf.php';
 
 class ReporteAsistenciaController {
 
     public function reporte() {
+        require_alumno_or_secretaria();
         // Validar ID
         $id_asistencia = isset($_GET['id']) ? (int)$_GET['id'] : 0;
         if ($id_asistencia <= 0) die("ID invalido");
@@ -14,6 +16,7 @@ class ReporteAsistenciaController {
         $data = $asistenciaModel->obtenerPorIdParaReporte($id_asistencia);
 
         if (!$data) die("No se encontro la asistencia con ID: $id_asistencia");
+        if (!can_access_alumno($data['id_alumno'])) deny_access();
 
         // Crear PDF
         $pdf = new FPDF();
