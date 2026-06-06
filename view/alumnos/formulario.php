@@ -590,7 +590,9 @@ $alumnos = $alumno->obtenerTodo();
                   onclick="return confirm('¿Está seguro de eliminar este alumno?');">
                   <i class="bi bi-trash-fill"></i>
                 </a>
-
+                <a href='../../controller/ReporteAlumnoController.php?accion=reporte&id=<?= $a['id_alumno'] ?>' target='_blank' class='btn btn-sm btn-primary'>
+                                 <i class="bi bi-file-earmark-pdf"></i> PDF
+                                    </a>
               </td>
             </tr>
 

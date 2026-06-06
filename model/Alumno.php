@@ -79,6 +79,17 @@ public function __construct()
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$id]);
     }
+
+    public function obtenerPorIdParaReporte($id_alumno)
+    {
+        $sql = "SELECT id_alumno, nombres, apellidos,
+                correo, telefono, estado 
+                FROM alumnos WHERE id_alumno = ?";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$id_alumno]);//2
+        return $stmt->fetch(PDO::FETCH_ASSOC);//solo un registro
+}
 }
 
 ?>

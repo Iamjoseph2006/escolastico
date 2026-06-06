@@ -89,11 +89,32 @@ class Notas{
 
     }
 
-    public function obtenerPorId($id){ //1717
+    public function obtenerPorId($id){ //5
         $sql = "SELECT * FROM notas WHERE id_nota = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function obtenerPorIdParaReporte($id_nota)
+    {
+        $sql = "SELECT
+                notas.id_nota,
+                alumnos.id_alumno,
+                alumnos.nombres,
+                alumnos.apellidos,
+                notas.materia,
+                notas.nota1,
+                notas.nota2,
+                notas.nota3,
+                notas.npromedio
+                FROM notas
+                INNER JOIN alumnos ON notas.id_alumno = alumnos.id_alumno
+                WHERE id_nota = ?";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$id_nota]);//2
+        return $stmt->fetch(PDO::FETCH_ASSOC);//solo un registro
     }
 }

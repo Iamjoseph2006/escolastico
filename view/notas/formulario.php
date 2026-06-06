@@ -626,7 +626,9 @@ $alumnos = $alumno->obtenerTodo();
                   onclick="return confirm('¿Está seguro de eliminar esta nota?');">
                   <i class="bi bi-trash-fill"></i>
                 </a>
-
+                <a href='../../controller/ReporteNotasController.php?accion=reporte&id=<?= $n['id_nota'] ?>' target='_blank' class='btn btn-sm btn-primary'>
+                                 <i class="bi bi-file-earmark-pdf"></i> PDF
+                                    </a>
               </td>
             </tr>
 
