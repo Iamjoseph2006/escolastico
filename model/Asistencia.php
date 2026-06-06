@@ -103,4 +103,27 @@ class Asistencia
             $data['id_asistencia']
         ]);
     }
+
+    public function obtenerPorIdParaReporte($id_asistencia)
+    {
+        $sql = "SELECT
+                asistencias.id_asistencia,
+                alumnos.id_alumno,
+                alumnos.nombres,
+                alumnos.apellidos,
+                asistencias.materia,
+                asistencias.creditos,
+                asistencias.horas_credito,
+                asistencias.numero_faltas,
+                asistencias.horas_faltas,
+                asistencias.porcentaje_asistencia,
+                asistencias.porcentaje_inasistencia
+                FROM asistencias
+                INNER JOIN alumnos ON asistencias.id_alumno = alumnos.id_alumno
+                WHERE id_asistencia = ?";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$id_asistencia]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }

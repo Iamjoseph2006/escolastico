@@ -642,6 +642,15 @@ $alumnos = $alumno->obtenerTodo();
                                 >
                                     <i class="bi bi-trash-fill"></i>
                                 </a>
+
+                                <a
+                                    href="../../controller/ReporteAsistenciaController.php?accion=reporte&id=<?= $a['id_asistencia'] ?>"
+                                    target="_blank"
+                                    class="btn btn-sm btn-primary"
+                                    title="Descargar PDF"
+                                >
+                                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                                </a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
