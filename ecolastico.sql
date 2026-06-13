@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 06-06-2026 a las 23:59:13
+-- Tiempo de generación: 11-06-2026 a las 04:43:30
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -42,7 +42,22 @@ CREATE TABLE `alumnos` (
 --
 
 INSERT INTO `alumnos` (`id_alumno`, `nombres`, `apellidos`, `correo`, `telefono`, `estado`, `creado_en`) VALUES
-(2101, 'José Jhair', 'Hernández Tseremp', 'joselitohernandez2006@gmail.com', '0968738976', 'ACTIVO', '2026-05-22 02:42:47');
+(2101, 'José Jhair', 'Hernández Tseremp', 'joselitohernandez2006@gmail.com', '0968738976', 'ACTIVO', '2026-05-22 02:42:47'),
+(2200, 'Josué Gabriel', 'Hernández Tseremp', 'josuehernandez2009@gmail.com', '0986471704', 'ACTIVO', '2026-06-06 22:01:55');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `archivos`
+--
+
+CREATE TABLE `archivos` (
+  `id_archivo` int(11) NOT NULL,
+  `nombre_archivo` varchar(255) NOT NULL,
+  `archivo_pdf` varchar(255) NOT NULL,
+  `fecha_subida` timestamp NOT NULL DEFAULT current_timestamp(),
+  `id_alumno` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -67,7 +82,8 @@ CREATE TABLE `asistencias` (
 --
 
 INSERT INTO `asistencias` (`id_asistencia`, `materia`, `creditos`, `horas_credito`, `numero_faltas`, `horas_faltas`, `porcentaje_asistencia`, `porcentaje_inasistencia`, `id_alumno`) VALUES
-(1, 'Programación Web', 2, 40, 1, 2, 95.00, 5.00, 2101);
+(1, 'Programación Web', 2, 40, 1, 2, 95.00, 5.00, 2101),
+(2, 'Diseño Web', 2, 40, 0, 0, 100.00, 0.00, 2200);
 
 -- --------------------------------------------------------
 
@@ -91,7 +107,8 @@ CREATE TABLE `notas` (
 --
 
 INSERT INTO `notas` (`id_nota`, `materia`, `nota1`, `nota2`, `nota3`, `npromedio`, `creado_en`, `id_alumno`) VALUES
-(1, 'Programación Web', 10.00, 9.60, 9.50, 9.70, '2026-05-22 03:03:18', 2101);
+(1, 'Programación Web', 10.00, 9.60, 9.50, 9.70, '2026-05-22 03:03:18', 2101),
+(2, 'Diseño Web', 9.50, 10.00, 9.75, 9.75, '2026-06-06 22:06:47', 2200);
 
 -- --------------------------------------------------------
 
@@ -116,8 +133,9 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id_usuario`, `nombre`, `usuario`, `correo`, `password`, `rol`, `id_alumno`, `estado`, `creado_en`) VALUES
-(3, 'Jose Hernandez', 'alumno', 'joselitohernandez2006@gmail.com', '$2y$10$IloRjo.sHD4BE3Q73Jo/w.ccCBZG.mGcoFPZmxQL/RtDyppxcMxDi', 'alumno', 2101, 'activo', '2026-06-06 21:14:45'),
-(4, 'Nelly Tenemaza', 'secretaria', 'secretaria@escolastico.edu.ec', '$2y$10$aheRAiB3fqT8LkMHfN9lwucGq0D8MveczhOOoVWZSPr9L7yyL3Ssi', 'secretaria', NULL, 'activo', '2026-06-06 21:16:18');
+(3, 'José Jhair Hernández Tseremp', 'José', 'joselitohernandez2006@gmail.com', '$2y$10$IloRjo.sHD4BE3Q73Jo/w.ccCBZG.mGcoFPZmxQL/RtDyppxcMxDi', 'alumno', 2101, 'activo', '2026-06-06 21:14:45'),
+(4, 'Nelly Tenemaza', 'secretaria', 'secretaria@escolastico.edu.ec', '$2y$10$aheRAiB3fqT8LkMHfN9lwucGq0D8MveczhOOoVWZSPr9L7yyL3Ssi', 'secretaria', NULL, 'activo', '2026-06-06 21:16:18'),
+(5, 'Josué Gabriel Hernández Tseremp', 'Josué', 'josuehernandez2009@gmail.com', '$2y$10$N5GKwLRRNGCDp4lyClDP3uXfCYAws0/kETmTnvwhsLiTxju9VF6o.', 'alumno', 2200, 'activo', '2026-06-06 22:07:48');
 
 --
 -- Índices para tablas volcadas
@@ -128,6 +146,13 @@ INSERT INTO `usuarios` (`id_usuario`, `nombre`, `usuario`, `correo`, `password`,
 --
 ALTER TABLE `alumnos`
   ADD PRIMARY KEY (`id_alumno`);
+
+--
+-- Indices de la tabla `archivos`
+--
+ALTER TABLE `archivos`
+  ADD PRIMARY KEY (`id_archivo`),
+  ADD KEY `fk_archivo_alumno` (`id_alumno`);
 
 --
 -- Indices de la tabla `asistencias`
@@ -157,26 +182,38 @@ ALTER TABLE `usuarios`
 --
 
 --
+-- AUTO_INCREMENT de la tabla `archivos`
+--
+ALTER TABLE `archivos`
+  MODIFY `id_archivo` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `asistencias`
 --
 ALTER TABLE `asistencias`
-  MODIFY `id_asistencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_asistencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `notas`
 --
 ALTER TABLE `notas`
-  MODIFY `id_nota` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_nota` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Restricciones para tablas volcadas
 --
+
+--
+-- Filtros para la tabla `archivos`
+--
+ALTER TABLE `archivos`
+  ADD CONSTRAINT `fk_archivo_alumno` FOREIGN KEY (`id_alumno`) REFERENCES `alumnos` (`id_alumno`);
 
 --
 -- Filtros para la tabla `asistencias`

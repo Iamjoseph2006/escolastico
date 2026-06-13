@@ -16,19 +16,19 @@ $alumnos  = $alumno->obtenerTodo();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Carga de Archivos PDF</title>
 
-  <!-- Bootstrap para el diseño visual -->
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Íconos de Bootstrap -->
+  <!-- Íconos -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
   <style>
     :root {
       --bg: #f4f7fb;
-      --surface: rgba(255, 255, 255, 0.92);
+      --surface: rgba(255, 255, 255, 0.94);
       --text: #172033;
       --muted: #667085;
-      --line: #e6eaf0;
+      --line: #dbe4ef;
       --primary: #2563eb;
       --primary-dark: #1d4ed8;
       --primary-soft: #eaf1ff;
@@ -57,7 +57,7 @@ $alumnos  = $alumno->obtenerTodo();
         var(--bg);
       color: var(--text);
       font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      padding: 2rem 1rem 3rem;
+      padding: 1.4rem 0 3rem;
     }
 
     .main-container {
@@ -68,15 +68,15 @@ $alumnos  = $alumno->obtenerTodo();
     .back-link {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1.25rem;
-      padding: 0.7rem 1rem;
+      gap: 0.55rem;
+      margin-bottom: 1.4rem;
+      padding: 0.85rem 1.2rem;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.76);
+      background: rgba(255, 255, 255, 0.85);
       color: var(--text);
       font-size: 0.95rem;
-      font-weight: 700;
+      font-weight: 800;
       text-decoration: none;
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
       backdrop-filter: blur(16px);
@@ -84,17 +84,16 @@ $alumnos  = $alumno->obtenerTodo();
     }
 
     .back-link:hover {
-      border-color: rgba(37, 99, 235, 0.28);
       color: var(--primary);
+      border-color: rgba(37, 99, 235, 0.28);
       transform: translateY(-1px);
-      box-shadow: 0 14px 32px rgba(37, 99, 235, 0.12);
     }
 
     .card-custom {
       position: relative;
       overflow: hidden;
-      margin-bottom: 1.5rem;
-      padding: 1.5rem;
+      margin-bottom: 1.9rem;
+      padding: 2rem 1.8rem 1.5rem;
       border: 1px solid rgba(230, 234, 240, 0.95);
       border-radius: var(--radius-lg);
       background: var(--surface);
@@ -106,7 +105,7 @@ $alumnos  = $alumno->obtenerTodo();
       content: "";
       position: absolute;
       inset: 0 0 auto;
-      height: 5px;
+      height: 6px;
       background: linear-gradient(90deg, var(--primary), #0ea5e9);
     }
 
@@ -114,10 +113,10 @@ $alumnos  = $alumno->obtenerTodo();
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.75rem;
-      margin: 0 0 1.6rem;
+      gap: 0.85rem;
+      margin: 0 0 1.8rem;
       color: var(--text);
-      font-size: 1.35rem;
+      font-size: 1.45rem;
       font-weight: 800;
       letter-spacing: -0.03em;
       text-align: center;
@@ -126,12 +125,12 @@ $alumnos  = $alumno->obtenerTodo();
     .title i {
       display: inline-grid;
       place-items: center;
-      width: 44px;
-      height: 44px;
-      border-radius: 15px;
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
       background: var(--primary-soft);
       color: var(--primary);
-      font-size: 1.2rem;
+      font-size: 1.3rem;
     }
 
     .form-group {
@@ -139,29 +138,29 @@ $alumnos  = $alumno->obtenerTodo();
       margin-bottom: 1.2rem;
     }
 
-    .form-group i {
+    .form-group > i.icon-left {
       position: absolute;
       top: 50%;
       left: 1rem;
-      z-index: 2;
+      z-index: 3;
       color: var(--muted);
       transform: translateY(-50%);
       transition: color 0.2s ease;
     }
 
-    .form-group:focus-within i {
+    .form-group:focus-within > i.icon-left {
       color: var(--primary);
     }
 
     .form-control,
     .form-select {
-      min-height: 52px;
+      min-height: 60px;
       border: 1px solid var(--line);
       border-radius: var(--radius-sm);
-      background-color: rgba(255, 255, 255, 0.94);
+      background-color: rgba(255, 255, 255, 0.96);
       color: var(--text);
-      font-size: 0.95rem;
-      padding-left: 2.75rem;
+      font-size: 0.98rem;
+      padding-left: 3rem;
       box-shadow: none;
       transition: all 0.2s ease;
     }
@@ -177,17 +176,80 @@ $alumnos  = $alumno->obtenerTodo();
       box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
     }
 
+    /* INPUT FILE PERSONALIZADO */
+    .file-upload-wrap {
+      position: relative;
+      min-height: 60px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.96);
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .file-upload-wrap:focus-within {
+      border-color: rgba(37, 99, 235, 0.55);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+      background: #ffffff;
+    }
+
+    .file-upload-icon {
+      width: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .file-upload-btn {
+      display: flex;
+      align-items: center;
+      padding: 0 1.1rem;
+      background: #ffffff;
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      font-weight: 600;
+      color: #344054;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .file-upload-name {
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      color: #475467;
+      font-size: 0.95rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-input-native {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
     .btn-save,
     .btn-clear {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 0.55rem;
-      min-height: 52px;
+      min-height: 60px;
       border-radius: var(--radius-sm);
       font-weight: 800;
       text-decoration: none;
       transition: all 0.2s ease;
+      font-size: 0.98rem;
     }
 
     .btn-save {
@@ -221,24 +283,24 @@ $alumnos  = $alumno->obtenerTodo();
     }
 
     .table-responsive {
-      padding: 0.15rem;
+      padding: 0.2rem;
     }
 
     .table {
       margin: 0;
       border-collapse: separate;
-      border-spacing: 0 0.55rem;
+      border-spacing: 0 0.7rem;
     }
 
     .table thead th {
       border: 0;
       background: transparent;
       color: var(--muted);
-      font-size: 0.76rem;
+      font-size: 0.8rem;
       font-weight: 800;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      padding: 0.75rem 1rem;
+      padding: 0.85rem 1rem;
       white-space: nowrap;
     }
 
@@ -279,12 +341,12 @@ $alumnos  = $alumno->obtenerTodo();
     .badge-pdf {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      padding: 0.45rem 0.75rem;
+      gap: 0.45rem;
+      padding: 0.48rem 0.78rem;
       border-radius: 999px;
       background: var(--primary-soft);
       color: var(--primary);
-      font-size: 0.82rem;
+      font-size: 0.83rem;
       font-weight: 800;
       white-space: nowrap;
     }
@@ -325,9 +387,19 @@ $alumnos  = $alumno->obtenerTodo();
       padding: 1.4rem !important;
     }
 
+    @media (max-width: 1200px) {
+      .main-container {
+        width: min(100%, calc(100% - 48px));
+      }
+    }
+
     @media (max-width: 768px) {
       body {
-        padding: 1rem 0.75rem 2rem;
+        padding: 1rem 0 2rem;
+      }
+
+      .main-container {
+        width: calc(100% - 24px);
       }
 
       .card-custom {
@@ -336,18 +408,32 @@ $alumnos  = $alumno->obtenerTodo();
       }
 
       .title {
-        align-items: flex-start;
+        font-size: 1.2rem;
         justify-content: flex-start;
         text-align: left;
       }
 
-      .btn-clear {
+      .file-upload-wrap {
+        flex-wrap: wrap;
+        min-height: auto;
+      }
+
+      .file-upload-icon {
+        height: 58px;
+      }
+
+      .file-upload-btn {
+        min-height: 58px;
+      }
+
+      .file-upload-name {
         width: 100%;
+        min-height: 50px;
+        border-top: 1px solid var(--line);
       }
     }
   </style>
 </head>
-
 <body>
 
 <div class="main-container">
@@ -364,23 +450,23 @@ $alumnos  = $alumno->obtenerTodo();
     </h2>
 
     <form action="../../controller/ArchivoController.php" method="POST" enctype="multipart/form-data">
-      <div class="row">
+      <div class="row g-3">
 
-        <div class="col-md-4">
+        <div class="col-lg-3 col-md-6">
           <div class="form-group">
-            <i class="bi bi-file-earmark-text"></i>
-            <input 
-              type="text" 
-              name="nombre_archivo" 
-              class="form-control" 
-              placeholder="Nombre Documento" 
+            <i class="bi bi-file-earmark-text icon-left"></i>
+            <input
+              type="text"
+              name="nombre_archivo"
+              class="form-control"
+              placeholder="Nombre Documento"
               required>
           </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-lg-4 col-md-6">
           <div class="form-group">
-            <i class="bi bi-person-fill"></i>
+            <i class="bi bi-person-fill icon-left"></i>
             <select name="id_alumno" class="form-select" required>
               <option value="">Seleccione alumno</option>
               <?php foreach ($alumnos as $a): ?>
@@ -392,27 +478,39 @@ $alumnos  = $alumno->obtenerTodo();
           </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-lg-5 col-md-12">
           <div class="form-group">
-            <i class="bi bi-upload"></i>
-            <input 
-              type="file" 
-              name="archivo_pdf" 
-              accept=".pdf" 
-              class="form-control" 
-              required>
+            <label class="file-upload-wrap">
+              <span class="file-upload-icon">
+                <i class="bi bi-upload"></i>
+              </span>
+
+              <span class="file-upload-btn">Seleccionar archivo</span>
+
+              <span class="file-upload-name" id="fileName">
+                Sin archivos seleccionados
+              </span>
+
+              <input
+                type="file"
+                name="archivo_pdf"
+                id="archivo_pdf"
+                accept=".pdf"
+                class="file-input-native"
+                required>
+            </label>
           </div>
         </div>
 
-        <div class="col-md-10">
+        <div class="col-lg-10 col-md-9">
           <button type="submit" class="btn-save">
             <i class="bi bi-save"></i>
             Guardar Archivo
           </button>
         </div>
 
-        <div class="col-md-2">
-          <button type="reset" class="btn-clear">
+        <div class="col-lg-2 col-md-3">
+          <button type="reset" class="btn-clear" id="btnReset">
             <i class="bi bi-x-circle"></i>
             Limpiar
           </button>
@@ -432,7 +530,7 @@ $alumnos  = $alumno->obtenerTodo();
       <table class="table table-hover">
         <thead>
           <tr>
-            <th>ID Registro</th>
+            <th>ID</th>
             <th>Alumno</th>
             <th>Documento</th>
             <th>PDF</th>
@@ -440,39 +538,30 @@ $alumnos  = $alumno->obtenerTodo();
             <th>Acciones</th>
           </tr>
         </thead>
-
         <tbody>
           <?php if (!empty($archivos)): ?>
             <?php foreach ($archivos as $a): ?>
               <tr>
                 <td><?= htmlspecialchars($a['id_archivo']) ?></td>
-
-                <td>
-                  <?= htmlspecialchars($a['nombres']) ?>
-                  <?= htmlspecialchars($a['apellidos']) ?>
-                </td>
-
+                <td><?= htmlspecialchars($a['nombres']) ?> <?= htmlspecialchars($a['apellidos']) ?></td>
                 <td>
                   <span class="badge-pdf">
                     <i class="bi bi-file-earmark-text"></i>
                     <?= htmlspecialchars($a['nombre_archivo']) ?>
                   </span>
                 </td>
-
                 <td>
-                  <a 
-                    href="../../uploads/<?= htmlspecialchars($a['archivo_pdf']) ?>" 
-                    target="_blank" 
+                  <a
+                    href="../../uploads/<?= htmlspecialchars($a['archivo_pdf']) ?>"
+                    target="_blank"
                     class="action-btn view-btn"
                     title="Ver PDF">
                     <i class="bi bi-file-earmark-pdf"></i>
                   </a>
                 </td>
-
                 <td><?= htmlspecialchars($a['fecha_subida']) ?></td>
-
                 <td>
-                  <a 
+                  <a
                     href="../../controller/ArchivoController.php?eliminar=<?= htmlspecialchars($a['id_archivo']) ?>"
                     class="action-btn delete-btn"
                     title="Eliminar"
@@ -484,18 +573,35 @@ $alumnos  = $alumno->obtenerTodo();
             <?php endforeach; ?>
           <?php else: ?>
             <tr>
-              <td colspan="6" class="empty-row">
-                No hay archivos registrados.
-              </td>
+              <td colspan="6" class="empty-row">No hay archivos registrados.</td>
             </tr>
           <?php endif; ?>
         </tbody>
-
       </table>
     </div>
   </div>
 
 </div>
+
+<script>
+  const archivoInput = document.getElementById('archivo_pdf');
+  const fileName = document.getElementById('fileName');
+  const btnReset = document.getElementById('btnReset');
+
+  archivoInput.addEventListener('change', function () {
+    if (this.files.length > 0) {
+      fileName.textContent = this.files[0].name;
+    } else {
+      fileName.textContent = 'Sin archivos seleccionados';
+    }
+  });
+
+  btnReset.addEventListener('click', function () {
+    setTimeout(() => {
+      fileName.textContent = 'Sin archivos seleccionados';
+    }, 50);
+  });
+</script>
 
 </body>
 </html>

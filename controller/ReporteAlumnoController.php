@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('America/Guayaquil');
 require_once __DIR__ . '/../config/Auth.php';
 require_once __DIR__ . '/../model/Alumno.php';
 require_once __DIR__ . '/../libs/fpdf/fpdf.php';

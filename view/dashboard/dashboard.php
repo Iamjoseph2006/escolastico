@@ -30,6 +30,7 @@ if (is_alumno()) {
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -321,178 +322,180 @@ if (is_alumno()) {
         }
     </style>
 </head>
+
 <body>
 
-<div class="main-container">
-    <header class="topbar">
-        <div class="brand">
-            <span class="brand-icon"><i class="bi bi-mortarboard-fill"></i></span>
-            <div>
-                <h1>Panel Escolastico</h1>
-                <p>
-                    <?= htmlspecialchars($usuario['nombre']) ?>
-                    <span class="badge-role ms-2">
-                        <i class="bi bi-person-badge-fill"></i>
-                        <?= htmlspecialchars(ucfirst($usuario['rol'])) ?>
-                    </span>
-                </p>
+    <div class="main-container">
+        <header class="topbar">
+            <div class="brand">
+                <span class="brand-icon"><i class="bi bi-mortarboard-fill"></i></span>
+                <div>
+                    <h1>Panel Escolastico</h1>
+                    <p>
+                        <?= htmlspecialchars($usuario['nombre']) ?>
+                        <span class="badge-role ms-2">
+                            <i class="bi bi-person-badge-fill"></i>
+                            <?= htmlspecialchars(ucfirst($usuario['rol'])) ?>
+                        </span>
+                    </p>
+                </div>
             </div>
-        </div>
 
-        <a href="../../controller/AuthController.php?accion=logout" class="logout-link">
-            <i class="bi bi-box-arrow-right"></i>
-            Salir
-        </a>
-    </header>
+            <a href="../../controller/AuthController.php?accion=logout" class="logout-link">
+                <i class="bi bi-box-arrow-right"></i>
+                Salir
+            </a>
+        </header>
 
-    <section class="card-custom">
-        <h2 class="title"><i class="bi bi-grid-1x2-fill"></i> Accesos</h2>
+        <section class="card-custom">
+            <h2 class="title"><i class="bi bi-grid-1x2-fill"></i> Accesos</h2>
 
-        <div class="modules-grid">
-            <?php if (is_secretaria()): ?>
-                <a href="../alumnos/formulario.php" class="module">
-                    <div>
-                        <p class="module-title">Alumnos</p>
-                        <p class="module-text">Registro y administracion</p>
-                    </div>
-                    <span class="module-icon"><i class="bi bi-people-fill"></i></span>
-                </a>
+            <div class="modules-grid">
+                <?php if (is_secretaria()): ?>
+                    <a href="../alumnos/formulario.php" class="module">
+                        <div>
+                            <p class="module-title">Alumnos</p>
+                            <p class="module-text">Registro y administracion</p>
+                        </div>
+                        <span class="module-icon"><i class="bi bi-people-fill"></i></span>
+                    </a>
 
-                <a href="../notas/formulario.php" class="module">
-                    <div>
-                        <p class="module-title">Notas</p>
-                        <p class="module-text">Calificaciones y reportes</p>
-                    </div>
-                    <span class="module-icon"><i class="bi bi-journal-check"></i></span>
-                </a>
+                    <a href="../notas/formulario.php" class="module">
+                        <div>
+                            <p class="module-title">Notas</p>
+                            <p class="module-text">Calificaciones y reportes</p>
+                        </div>
+                        <span class="module-icon"><i class="bi bi-journal-check"></i></span>
+                    </a>
 
-                <a href="../asistencia/formulario.php" class="module">
-                    <div>
-                        <p class="module-title">Asistencia</p>
-                        <p class="module-text">Faltas y porcentajes</p>
-                    </div>
-                    <span class="module-icon"><i class="bi bi-calendar-check-fill"></i></span>
-                </a>
-            <?php else: ?>
-                <a href="../../controller/ReporteAlumnoController.php?accion=reporte&id=<?= htmlspecialchars(auth_alumno_id()) ?>" target="_blank" class="module">
-                    <div>
-                        <p class="module-title">Mi informacion</p>
-                        <p class="module-text">Reporte personal</p>
-                    </div>
-                    <span class="module-icon"><i class="bi bi-person-lines-fill"></i></span>
-                </a>
+                    <a href="../asistencia/formulario.php" class="module">
+                        <div>
+                            <p class="module-title">Asistencia</p>
+                            <p class="module-text">Faltas y porcentajes</p>
+                        </div>
+                        <span class="module-icon"><i class="bi bi-calendar-check-fill"></i></span>
+                    </a>
+                <?php else: ?>
+                    <a href="../../controller/ReporteAlumnoController.php?accion=reporte&id=<?= htmlspecialchars(auth_alumno_id()) ?>" target="_blank" class="module">
+                        <div>
+                            <p class="module-title">Mi informacion</p>
+                            <p class="module-text">Reporte personal</p>
+                        </div>
+                        <span class="module-icon"><i class="bi bi-person-lines-fill"></i></span>
+                    </a>
 
-                <a href="#mis-notas" class="module">
-                    <div>
-                        <p class="module-title">Mis notas</p>
-                        <p class="module-text">Calificaciones disponibles</p>
-                    </div>
-                    <span class="module-icon"><i class="bi bi-journal-check"></i></span>
-                </a>
+                    <a href="#mis-notas" class="module">
+                        <div>
+                            <p class="module-title">Mis notas</p>
+                            <p class="module-text">Calificaciones disponibles</p>
+                        </div>
+                        <span class="module-icon"><i class="bi bi-journal-check"></i></span>
+                    </a>
 
-                <a href="#mi-asistencia" class="module">
-                    <div>
-                        <p class="module-title">Mi asistencia</p>
-                        <p class="module-text">Porcentajes y faltas</p>
-                    </div>
-                    <span class="module-icon"><i class="bi bi-calendar-check-fill"></i></span>
-                </a>
-            <?php endif; ?>
-        </div>
-    </section>
-
-    <section class="card-custom">
-        <h2 class="title"><i class="bi bi-bar-chart-fill"></i> Resumen</h2>
-
-        <div class="stats-grid">
-            <div class="stat">
-                <span><?= is_secretaria() ? 'Alumnos' : 'Mi registro' ?></span>
-                <strong><?= is_secretaria() ? count($alumnos) : ($alumnoActual ? 1 : 0) ?></strong>
-            </div>
-            <div class="stat">
-                <span>Notas</span>
-                <strong><?= count($notas) ?></strong>
-            </div>
-            <div class="stat">
-                <span>Asistencias</span>
-                <strong><?= count($asistencias) ?></strong>
-            </div>
-        </div>
-    </section>
-
-    <?php if (is_alumno()): ?>
-        <section class="card-custom" id="mis-notas">
-            <h2 class="title"><i class="bi bi-journal-check"></i> Mis notas</h2>
-
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Materia</th>
-                            <th>Nota 1</th>
-                            <th>Nota 2</th>
-                            <th>Nota 3</th>
-                            <th>Promedio</th>
-                            <th>Reporte</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($notas as $nota): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($nota['materia']) ?></td>
-                                <td><?= htmlspecialchars($nota['nota1']) ?></td>
-                                <td><?= htmlspecialchars($nota['nota2']) ?></td>
-                                <td><?= htmlspecialchars($nota['nota3']) ?></td>
-                                <td><strong><?= number_format($nota['npromedio'], 2) ?></strong></td>
-                                <td>
-                                    <a href="../../controller/ReporteNotasController.php?accion=reporte&id=<?= htmlspecialchars($nota['id_nota']) ?>" target="_blank" class="btn btn-sm btn-primary">
-                                        <i class="bi bi-file-earmark-pdf"></i> PDF
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                    <a href="#mi-asistencia" class="module">
+                        <div>
+                            <p class="module-title">Mi asistencia</p>
+                            <p class="module-text">Porcentajes y faltas</p>
+                        </div>
+                        <span class="module-icon"><i class="bi bi-calendar-check-fill"></i></span>
+                    </a>
+                <?php endif; ?>
             </div>
         </section>
 
-        <section class="card-custom" id="mi-asistencia">
-            <h2 class="title"><i class="bi bi-calendar-check-fill"></i> Mi asistencia</h2>
+        <section class="card-custom">
+            <h2 class="title"><i class="bi bi-bar-chart-fill"></i> Resumen</h2>
 
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Materia</th>
-                            <th>Creditos</th>
-                            <th>Faltas</th>
-                            <th>% Asistencia</th>
-                            <th>% Inasistencia</th>
-                            <th>Reporte</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($asistencias as $asistencia): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($asistencia['materia']) ?></td>
-                                <td><?= htmlspecialchars($asistencia['creditos']) ?></td>
-                                <td><?= htmlspecialchars($asistencia['numero_faltas']) ?></td>
-                                <td><strong><?= number_format($asistencia['porcentaje_asistencia'], 2) ?>%</strong></td>
-                                <td><?= number_format($asistencia['porcentaje_inasistencia'], 2) ?>%</td>
-                                <td>
-                                    <a href="../../controller/ReporteAsistenciaController.php?accion=reporte&id=<?= htmlspecialchars($asistencia['id_asistencia']) ?>" target="_blank" class="btn btn-sm btn-primary">
-                                        <i class="bi bi-file-earmark-pdf"></i> PDF
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+            <div class="stats-grid">
+                <div class="stat">
+                    <span><?= is_secretaria() ? 'Alumnos' : 'Mi registro' ?></span>
+                    <strong><?= is_secretaria() ? count($alumnos) : ($alumnoActual ? 1 : 0) ?></strong>
+                </div>
+                <div class="stat">
+                    <span>Notas</span>
+                    <strong><?= count($notas) ?></strong>
+                </div>
+                <div class="stat">
+                    <span>Asistencias</span>
+                    <strong><?= count($asistencias) ?></strong>
+                </div>
             </div>
         </section>
-    <?php endif; ?>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <?php if (is_alumno()): ?>
+            <section class="card-custom" id="mis-notas">
+                <h2 class="title"><i class="bi bi-journal-check"></i> Mis notas</h2>
+
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Materia</th>
+                                <th>Nota 1</th>
+                                <th>Nota 2</th>
+                                <th>Nota 3</th>
+                                <th>Promedio</th>
+                                <th>Reporte</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($notas as $nota): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($nota['materia']) ?></td>
+                                    <td><?= htmlspecialchars($nota['nota1']) ?></td>
+                                    <td><?= htmlspecialchars($nota['nota2']) ?></td>
+                                    <td><?= htmlspecialchars($nota['nota3']) ?></td>
+                                    <td><strong><?= number_format($nota['npromedio'], 2) ?></strong></td>
+                                    <td>
+                                        <a href="../../controller/ReporteNotasController.php?accion=reporte&id=<?= htmlspecialchars($nota['id_nota']) ?>" target="_blank" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-file-earmark-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card-custom" id="mi-asistencia">
+                <h2 class="title"><i class="bi bi-calendar-check-fill"></i> Mi asistencia</h2>
+
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Materia</th>
+                                <th>Creditos</th>
+                                <th>Faltas</th>
+                                <th>% Asistencia</th>
+                                <th>% Inasistencia</th>
+                                <th>Reporte</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($asistencias as $asistencia): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($asistencia['materia']) ?></td>
+                                    <td><?= htmlspecialchars($asistencia['creditos']) ?></td>
+                                    <td><?= htmlspecialchars($asistencia['numero_faltas']) ?></td>
+                                    <td><strong><?= number_format($asistencia['porcentaje_asistencia'], 2) ?>%</strong></td>
+                                    <td><?= number_format($asistencia['porcentaje_inasistencia'], 2) ?>%</td>
+                                    <td>
+                                        <a href="../../controller/ReporteAsistenciaController.php?accion=reporte&id=<?= htmlspecialchars($asistencia['id_asistencia']) ?>" target="_blank" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-file-earmark-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        <?php endif; ?>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
