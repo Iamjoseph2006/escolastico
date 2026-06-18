@@ -1,6 +1,6 @@
 <?php
 require_once '../../config/Auth.php';
-require_secretaria();
+require_alumno_or_secretaria();
 
 require_once '../../model/Asistencia.php';
 require_once '../../model/Alumno.php';
@@ -25,7 +25,15 @@ if (isset($_GET['id'])) {
 }
 
 $asistencias = $asistencia->obtenerTodos();
-$alumnos = $alumno->obtenerTodo();
+
+if (is_alumno()) {
+    $idAlumno = auth_alumno_id();
+    $asistencias = array_values(array_filter($asistencias, function ($a) use ($idAlumno) {
+        return (string)$a['id_alumno'] === (string)$idAlumno;
+    }));
+}
+
+$alumnos = is_secretaria() ? $alumno->obtenerTodo() : [];
 
 ?>
 <!DOCTYPE html>
@@ -407,6 +415,7 @@ $alumnos = $alumno->obtenerTodo();
         <i class="bi bi-arrow-left-circle"></i> Volver al dashboard
     </a>
 
+    <?php if (is_secretaria()): ?>
     <!-- Tarjeta formulario -->
     <div class="card-custom">
 
@@ -582,13 +591,14 @@ $alumnos = $alumno->obtenerTodo();
 
         </form>
     </div>
+    <?php endif; ?>
 
     <!-- Tarjeta tabla -->
     <div class="card-custom">
 
         <h4 class="title">
             <i class="bi bi-table"></i>
-            Lista de Asistencias
+            <?= is_secretaria() ? 'Lista de Asistencias' : 'Mi Asistencia' ?>
         </h4>
 
         <div class="table-responsive">
@@ -607,6 +617,7 @@ $alumnos = $alumno->obtenerTodo();
                 </thead>
 
                 <tbody>
+                    <?php if (!empty($asistencias)): ?>
                     <?php foreach ($asistencias as $a): ?>
                         <tr>
                             <td><?= htmlspecialchars($a['id_asistencia']) ?></td>
@@ -628,6 +639,7 @@ $alumnos = $alumno->obtenerTodo();
                             </td>
 
                             <td class="text-center">
+                                <?php if (is_secretaria()): ?>
                                 <a
                                     href="formulario.php?id=<?= $a['id_asistencia'] ?>"
                                     class="action-btn edit-btn"
@@ -645,6 +657,8 @@ $alumnos = $alumno->obtenerTodo();
                                     <i class="bi bi-trash-fill"></i>
                                 </a>
 
+                                <?php endif; ?>
+
                                 <a
                                     href="../../controller/ReporteAsistenciaController.php?accion=reporte&id=<?= $a['id_asistencia'] ?>"
                                     target="_blank"
@@ -656,6 +670,11 @@ $alumnos = $alumno->obtenerTodo();
                             </td>
                         </tr>
                     <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="8" class="text-center">No hay asistencias registradas.</td>
+                        </tr>
+                    <?php endif; ?>
                 </tbody>
 
             </table>
@@ -666,6 +685,10 @@ $alumnos = $alumno->obtenerTodo();
 
 <script>
 function calcularAsistencia() {
+    if (!document.getElementById('creditos')) {
+        return;
+    }
+
     let creditos = parseFloat(document.getElementById('creditos').value) || 0;
     let faltas = parseFloat(document.getElementById('numero_faltas').value) || 0;
 

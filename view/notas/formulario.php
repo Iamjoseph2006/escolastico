@@ -1,6 +1,6 @@
 <?php
 require_once '../../config/Auth.php';
-require_secretaria();
+require_alumno_or_secretaria();
 
 // Se importa el modelo Nota.
 // Este modelo permite listar, registrar, editar y eliminar notas.
@@ -44,10 +44,16 @@ if (isset($_GET['id'])) {
 // Se obtienen todas las notas registradas para mostrarlas en la tabla.
 $notas = $nota->obtenerTodos();
 
+if (is_alumno()) {
+    $idAlumno = auth_alumno_id();
+    $notas = array_values(array_filter($notas, function ($n) use ($idAlumno) {
+        return (string)$n['id_alumno'] === (string)$idAlumno;
+    }));
+}
 
 // Se obtienen todos los alumnos registrados.
 // Esto sirve para llenar el select de alumnos.
-$alumnos = $alumno->obtenerTodo();
+$alumnos = is_secretaria() ? $alumno->obtenerTodo() : [];
 
 ?>
 
@@ -406,6 +412,7 @@ $alumnos = $alumno->obtenerTodo();
     <i class="bi bi-arrow-left-circle"></i> Volver al dashboard
   </a>
 
+  <?php if (is_secretaria()): ?>
   <!-- Tarjeta del formulario -->
   <div class="card-custom">
 
@@ -552,13 +559,14 @@ $alumnos = $alumno->obtenerTodo();
 
     </form>
   </div>
+  <?php endif; ?>
 
   <!-- Tarjeta de la tabla -->
   <div class="card-custom">
 
     <h4 class="title">
       <i class="bi bi-table"></i>
-      Lista de Notas
+      <?= is_secretaria() ? 'Lista de Notas' : 'Mis Notas' ?>
     </h4>
 
     <div class="table-responsive">
@@ -580,7 +588,7 @@ $alumnos = $alumno->obtenerTodo();
 
         <tbody>
 
-          <!-- Se recorren todas las notas registradas -->
+          <?php if (!empty($notas)): ?>
           <?php foreach ($notas as $n): ?>
 
             <tr>
@@ -613,6 +621,7 @@ $alumnos = $alumno->obtenerTodo();
               <td class="text-center">
 
                 <!-- Botón editar -->
+                <?php if (is_secretaria()): ?>
                 <a
                   href="formulario.php?id=<?= htmlspecialchars($n['id_nota']) ?>"
                   class="action-btn edit-btn"
@@ -628,6 +637,7 @@ $alumnos = $alumno->obtenerTodo();
                   onclick="return confirm('¿Está seguro de eliminar esta nota?');">
                   <i class="bi bi-trash-fill"></i>
                 </a>
+                <?php endif; ?>
                 <a href='../../controller/ReporteNotasController.php?accion=reporte&id=<?= $n['id_nota'] ?>' target='_blank' class='btn btn-sm btn-primary'>
                                  <i class="bi bi-file-earmark-pdf"></i> PDF
                                     </a>
@@ -635,6 +645,11 @@ $alumnos = $alumno->obtenerTodo();
             </tr>
 
           <?php endforeach; ?>
+          <?php else: ?>
+            <tr>
+              <td colspan="8" class="text-center">No hay notas registradas.</td>
+            </tr>
+          <?php endif; ?>
 
         </tbody>
 
@@ -649,6 +664,9 @@ $alumnos = $alumno->obtenerTodo();
   // Función para calcular el promedio de las tres notas.
   // Esta operación se realiza en JavaScript antes de enviar a PHP.
   function calcularPromedio() {
+    if (!document.getElementById('nota1')) {
+      return;
+    }
 
     // Se obtiene la nota 1 desde el input.
     // parseFloat convierte el valor a número decimal.

@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Almacenar los datos del alumno en la sesión
         $_SESSION['alumno_registrado'] = $alumno;
-        $_SESSION['register_success'] = 'Registro exitoso. Bienvenido ' . $alumno['nombres'] . ' ' . $alumno['apellidos'] . '. Por favor inicia sesión';
+        $_SESSION['register_success'] = 'Registro exitoso. Por favor inicia sesion';
         header('Location: ../view/auth/login.php');
         exit;
 

@@ -132,6 +132,10 @@ unset($_SESSION['register_success']);
             transition: color 0.2s ease;
         }
 
+        .form-group.has-status i {
+            top: 26px;
+        }
+
         .form-group:focus-within i {
             color: var(--primary);
         }
@@ -306,7 +310,7 @@ unset($_SESSION['register_success']);
     <?php endif; ?>
 
     <form action="../../controller/RegisterController.php" method="POST" id="registerForm">
-        <div class="form-group">
+        <div class="form-group has-status">
             <i class="bi bi-envelope-fill"></i>
             <input
                 type="email"
@@ -395,7 +399,7 @@ unset($_SESSION['register_success']);
         }
 
         // Mostrar estado de validación
-        emailStatus.innerHTML = '⏳ Validando correo...';
+        emailStatus.textContent = 'Validando correo...';
         emailStatus.className = 'email-status validando';
         emailInput.className = 'form-control';
 
@@ -411,20 +415,20 @@ unset($_SESSION['register_success']);
             const data = await response.json();
 
             if (data.valido) {
-                emailStatus.innerHTML = '✓ ' + data.mensaje;
+                emailStatus.textContent = data.mensaje;
                 emailStatus.className = 'email-status exito';
                 emailInput.className = 'form-control exito';
                 emailValido = true;
                 submitBtn.disabled = false;
             } else {
-                emailStatus.innerHTML = '✗ ' + data.mensaje;
+                emailStatus.textContent = data.mensaje;
                 emailStatus.className = 'email-status error';
                 emailInput.className = 'form-control error';
                 emailValido = false;
                 submitBtn.disabled = true;
             }
         } catch (error) {
-            emailStatus.innerHTML = 'Error al validar correo';
+            emailStatus.textContent = 'Error al validar correo';
             emailStatus.className = 'email-status error';
             emailInput.className = 'form-control error';
             emailValido = false;

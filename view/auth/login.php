@@ -178,7 +178,7 @@ unset($_SESSION['login_error']);
         <i class="bi bi-shield-lock-fill"></i>
         Escolastico
     </h1>
-    <p class="subtitle">Acceso al sistema academico</p>
+    <p class="subtitle">Acceso al Sistema Académico</p>
 
     <?php if ($error): ?>
         <div class="alert alert-custom py-2" role="alert">

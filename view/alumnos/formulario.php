@@ -1,4 +1,7 @@
 <?php
+require_once '../../config/Auth.php';
+require_alumno_or_secretaria();
+
 require_once '../../model/Archivo.php';
 require_once '../../model/Alumno.php';
 
@@ -6,7 +9,15 @@ $archivo = new Archivo();
 $alumno  = new Alumno();
 
 $archivos = $archivo->obtenerTodo();
-$alumnos  = $alumno->obtenerTodo();
+
+if (is_alumno()) {
+    $idAlumno = auth_alumno_id();
+    $archivos = array_values(array_filter($archivos, function ($a) use ($idAlumno) {
+        return (string)$a['id_alumno'] === (string)$idAlumno;
+    }));
+}
+
+$alumnos  = is_secretaria() ? $alumno->obtenerTodo() : [];
 ?>
 
 <!DOCTYPE html>
@@ -357,6 +368,7 @@ $alumnos  = $alumno->obtenerTodo();
     Volver al dashboard
   </a>
 
+  <?php if (is_secretaria()): ?>
   <div class="card-custom">
     <h2 class="title">
       <i class="bi bi-file-earmark-pdf-fill"></i>
@@ -421,11 +433,12 @@ $alumnos  = $alumno->obtenerTodo();
       </div>
     </form>
   </div>
+  <?php endif; ?>
 
   <div class="card-custom">
     <h2 class="title">
       <i class="bi bi-table"></i>
-      Lista de Archivos
+      <?= is_secretaria() ? 'Lista de Archivos' : 'Mis Archivos' ?>
     </h2>
 
     <div class="table-responsive">
@@ -472,13 +485,20 @@ $alumnos  = $alumno->obtenerTodo();
                 <td><?= htmlspecialchars($a['fecha_subida']) ?></td>
 
                 <td>
-                  <a 
-                    href="../../controller/ArchivoController.php?eliminar=<?= htmlspecialchars($a['id_archivo']) ?>"
-                    class="action-btn delete-btn"
-                    title="Eliminar"
-                    onclick="return confirm('¿Eliminar archivo?')">
-                    <i class="bi bi-trash-fill"></i>
-                  </a>
+                  <?php if (is_secretaria()): ?>
+                    <a
+                      href="../../controller/ArchivoController.php?eliminar=<?= htmlspecialchars($a['id_archivo']) ?>"
+                      class="action-btn delete-btn"
+                      title="Eliminar"
+                      onclick="return confirm('¿Eliminar archivo?')">
+                      <i class="bi bi-trash-fill"></i>
+                    </a>
+                  <?php else: ?>
+                    <span class="badge-pdf">
+                      <i class="bi bi-eye-fill"></i>
+                      Consulta
+                    </span>
+                  <?php endif; ?>
                 </td>
               </tr>
             <?php endforeach; ?>

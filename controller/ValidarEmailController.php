@@ -6,16 +6,14 @@ require_once __DIR__ . '/../model/Alumno.php';
 
 $response = [
     'valido' => false,
-    'mensaje' => '',
-    'alumno' => null
+    'mensaje' => ''
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
     $email = trim($_POST['email'] ?? '');
 
-    // Validar formato de email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $response['mensaje'] = 'Formato de correo inválido';
+        $response['mensaje'] = 'Formato de correo invalido';
         echo json_encode($response);
         exit;
     }
@@ -26,8 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
 
         if ($alumno) {
             $response['valido'] = true;
-            $response['mensaje'] = 'Correo válido - ' . $alumno['nombres'] . ' ' . $alumno['apellidos'];
-            $response['alumno'] = $alumno;
+            $response['mensaje'] = 'Correo valido';
         } else {
             $response['mensaje'] = 'Correo no registrado. Contacta a la secretaria';
         }

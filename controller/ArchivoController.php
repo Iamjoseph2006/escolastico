@@ -1,6 +1,9 @@
 <?php
 
+require_once __DIR__ . '/../config/Auth.php';
 require_once __DIR__ . '/../model/Archivo.php';
+
+require_secretaria();
 
 $archivo = new Archivo();
 
