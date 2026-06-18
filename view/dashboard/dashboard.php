@@ -577,14 +577,14 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
             <section class="card-box hero-card">
                 <span class="welcome-label">
                     <i class="bi bi-stars"></i>
-                    Bienvenido al sistema académico
+                    Bienvenido/a al sistema académico
                 </span>
 
                 <h2>Gestiona tu información escolar desde un panel más visual.</h2>
 
                 <p>
                     Accede a documentos, calificaciones y asistencia de forma rápida,
-                    ordenada y con una presentación más moderna.
+                    ordenada.
                 </p>
 
                 <span class="bubble2"></span>

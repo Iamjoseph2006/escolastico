@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $_SESSION['login_error'] = 'Usuario o contrasena incorrectos';
+    $_SESSION['login_error'] = 'Usuario o contraseña incorrectos';
     header('Location: ../view/auth/login.php');
     exit;
 }
