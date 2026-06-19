@@ -1,12 +1,28 @@
 <?php
-require_once '../../model/Archivo.php';
-require_once '../../model/Alumno.php';
+require_once __DIR__ . '/../../config/Auth.php';
+require_alumno_or_secretaria();
+
+require_once __DIR__ . '/../../model/Archivo.php';
+require_once __DIR__ . '/../../model/Alumno.php';
 
 $archivo = new Archivo();
 $alumno  = new Alumno();
 
-$archivos = $archivo->obtenerTodo();
-$alumnos  = $alumno->obtenerTodo();
+$esSecretaria = is_secretaria();
+$idAlumno = auth_alumno_id();
+
+if ($esSecretaria) {
+    $archivos = $archivo->obtenerTodo();
+    $alumnos  = $alumno->obtenerTodo();
+} else {
+    $archivos = $idAlumno ? $archivo->obtenerPorAlumno($idAlumno) : [];
+    $alumnos = [];
+}
+
+function limpiar($valor)
+{
+    return htmlspecialchars((string)$valor, ENT_QUOTES, 'UTF-8');
+}
 ?>
 
 <!DOCTYPE html>
@@ -14,12 +30,9 @@ $alumnos  = $alumno->obtenerTodo();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carga de Archivos PDF</title>
+  <title><?= $esSecretaria ? 'Carga de Archivos PDF' : 'Mis Documentos PDF' ?></title>
 
-  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Íconos -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
   <style>
@@ -36,8 +49,6 @@ $alumnos  = $alumno->obtenerTodo();
       --success-soft: #e9f9ef;
       --danger: #dc2626;
       --danger-soft: #fff1f2;
-      --warning: #d97706;
-      --warning-soft: #fffbeb;
       --shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
       --radius-lg: 28px;
       --radius-md: 18px;
@@ -165,10 +176,6 @@ $alumnos  = $alumno->obtenerTodo();
       transition: all 0.2s ease;
     }
 
-    .form-control::placeholder {
-      color: #98a2b3;
-    }
-
     .form-control:focus,
     .form-select:focus {
       border-color: rgba(37, 99, 235, 0.55);
@@ -176,7 +183,6 @@ $alumnos  = $alumno->obtenerTodo();
       box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
     }
 
-    /* INPUT FILE PERSONALIZADO */
     .file-upload-wrap {
       position: relative;
       min-height: 60px;
@@ -383,8 +389,29 @@ $alumnos  = $alumno->obtenerTodo();
     .empty-row {
       text-align: center;
       color: var(--muted);
-      font-weight: 600;
-      padding: 1.4rem !important;
+      font-weight: 700;
+      padding: 1.6rem !important;
+    }
+
+    .empty-documents {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 2rem 1rem;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .empty-documents i {
+      width: 56px;
+      height: 56px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 18px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 1.6rem;
     }
 
     @media (max-width: 1200px) {
@@ -443,87 +470,89 @@ $alumnos  = $alumno->obtenerTodo();
     Volver al dashboard
   </a>
 
-  <div class="card-custom">
-    <h2 class="title">
-      <i class="bi bi-file-earmark-pdf-fill"></i>
-      Carga de Archivos PDF
-    </h2>
+  <?php if ($esSecretaria): ?>
+    <div class="card-custom">
+      <h2 class="title">
+        <i class="bi bi-file-earmark-pdf-fill"></i>
+        Carga de Archivos PDF
+      </h2>
 
-    <form action="../../controller/ArchivoController.php" method="POST" enctype="multipart/form-data">
-      <div class="row g-3">
+      <form action="../../controller/ArchivoController.php" method="POST" enctype="multipart/form-data">
+        <div class="row g-3">
 
-        <div class="col-lg-3 col-md-6">
-          <div class="form-group">
-            <i class="bi bi-file-earmark-text icon-left"></i>
-            <input
-              type="text"
-              name="nombre_archivo"
-              class="form-control"
-              placeholder="Nombre Documento"
-              required>
-          </div>
-        </div>
-
-        <div class="col-lg-4 col-md-6">
-          <div class="form-group">
-            <i class="bi bi-person-fill icon-left"></i>
-            <select name="id_alumno" class="form-select" required>
-              <option value="">Seleccione alumno</option>
-              <?php foreach ($alumnos as $a): ?>
-                <option value="<?= htmlspecialchars($a['id_alumno']) ?>">
-                  <?= htmlspecialchars($a['nombres']) ?> <?= htmlspecialchars($a['apellidos']) ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-        </div>
-
-        <div class="col-lg-5 col-md-12">
-          <div class="form-group">
-            <label class="file-upload-wrap">
-              <span class="file-upload-icon">
-                <i class="bi bi-upload"></i>
-              </span>
-
-              <span class="file-upload-btn">Seleccionar archivo</span>
-
-              <span class="file-upload-name" id="fileName">
-                Sin archivos seleccionados
-              </span>
-
+          <div class="col-lg-3 col-md-6">
+            <div class="form-group">
+              <i class="bi bi-file-earmark-text icon-left"></i>
               <input
-                type="file"
-                name="archivo_pdf"
-                id="archivo_pdf"
-                accept=".pdf"
-                class="file-input-native"
+                type="text"
+                name="nombre_archivo"
+                class="form-control"
+                placeholder="Nombre Documento"
                 required>
-            </label>
+            </div>
           </div>
-        </div>
 
-        <div class="col-lg-10 col-md-9">
-          <button type="submit" class="btn-save">
-            <i class="bi bi-save"></i>
-            Guardar Archivo
-          </button>
-        </div>
+          <div class="col-lg-4 col-md-6">
+            <div class="form-group">
+              <i class="bi bi-person-fill icon-left"></i>
+              <select name="id_alumno" class="form-select" required>
+                <option value="">Seleccione alumno</option>
+                <?php foreach ($alumnos as $a): ?>
+                  <option value="<?= limpiar($a['id_alumno']) ?>">
+                    <?= limpiar($a['nombres']) ?> <?= limpiar($a['apellidos']) ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
 
-        <div class="col-lg-2 col-md-3">
-          <button type="reset" class="btn-clear" id="btnReset">
-            <i class="bi bi-x-circle"></i>
-            Limpiar
-          </button>
-        </div>
+          <div class="col-lg-5 col-md-12">
+            <div class="form-group">
+              <label class="file-upload-wrap">
+                <span class="file-upload-icon">
+                  <i class="bi bi-upload"></i>
+                </span>
 
-      </div>
-    </form>
-  </div>
+                <span class="file-upload-btn">Seleccionar archivo</span>
+
+                <span class="file-upload-name" id="fileName">
+                  Sin archivos seleccionados
+                </span>
+
+                <input
+                  type="file"
+                  name="archivo_pdf"
+                  id="archivo_pdf"
+                  accept=".pdf"
+                  class="file-input-native"
+                  required>
+              </label>
+            </div>
+          </div>
+
+          <div class="col-lg-10 col-md-9">
+            <button type="submit" class="btn-save">
+              <i class="bi bi-save"></i>
+              Guardar Archivo
+            </button>
+          </div>
+
+          <div class="col-lg-2 col-md-3">
+            <button type="reset" class="btn-clear" id="btnReset">
+              <i class="bi bi-x-circle"></i>
+              Limpiar
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+  <?php endif; ?>
 
   <div class="card-custom">
     <h2 class="title">
       <i class="bi bi-table"></i>
-      Lista de Archivos
+      <?= $esSecretaria ? 'Lista de Archivos' : 'Mis Documentos' ?>
     </h2>
 
     <div class="table-responsive">
@@ -531,49 +560,70 @@ $alumnos  = $alumno->obtenerTodo();
         <thead>
           <tr>
             <th>ID</th>
-            <th>Alumno</th>
+            <?php if ($esSecretaria): ?>
+              <th>Alumno</th>
+            <?php endif; ?>
             <th>Documento</th>
             <th>PDF</th>
             <th>Fecha</th>
-            <th>Acciones</th>
+            <?php if ($esSecretaria): ?>
+              <th>Acciones</th>
+            <?php endif; ?>
           </tr>
         </thead>
+
         <tbody>
           <?php if (!empty($archivos)): ?>
             <?php foreach ($archivos as $a): ?>
               <tr>
-                <td><?= htmlspecialchars($a['id_archivo']) ?></td>
-                <td><?= htmlspecialchars($a['nombres']) ?> <?= htmlspecialchars($a['apellidos']) ?></td>
+                <td><?= limpiar($a['id_archivo']) ?></td>
+
+                <?php if ($esSecretaria): ?>
+                  <td><?= limpiar($a['nombres']) ?> <?= limpiar($a['apellidos']) ?></td>
+                <?php endif; ?>
+
                 <td>
                   <span class="badge-pdf">
                     <i class="bi bi-file-earmark-text"></i>
-                    <?= htmlspecialchars($a['nombre_archivo']) ?>
+                    <?= limpiar($a['nombre_archivo']) ?>
                   </span>
                 </td>
+
                 <td>
                   <a
-                    href="../../uploads/<?= htmlspecialchars($a['archivo_pdf']) ?>"
+                    href="../../uploads/<?= limpiar($a['archivo_pdf']) ?>"
                     target="_blank"
                     class="action-btn view-btn"
                     title="Ver PDF">
                     <i class="bi bi-file-earmark-pdf"></i>
                   </a>
                 </td>
-                <td><?= htmlspecialchars($a['fecha_subida']) ?></td>
-                <td>
-                  <a
-                    href="../../controller/ArchivoController.php?eliminar=<?= htmlspecialchars($a['id_archivo']) ?>"
-                    class="action-btn delete-btn"
-                    title="Eliminar"
-                    onclick="return confirm('¿Eliminar archivo?')">
-                    <i class="bi bi-trash-fill"></i>
-                  </a>
-                </td>
+
+                <td><?= limpiar($a['fecha_subida']) ?></td>
+
+                <?php if ($esSecretaria): ?>
+                  <td>
+                    <a
+                      href="../../controller/ArchivoController.php?eliminar=<?= limpiar($a['id_archivo']) ?>"
+                      class="action-btn delete-btn"
+                      title="Eliminar"
+                      onclick="return confirm('¿Eliminar archivo?')">
+                      <i class="bi bi-trash-fill"></i>
+                    </a>
+                  </td>
+                <?php endif; ?>
               </tr>
             <?php endforeach; ?>
           <?php else: ?>
             <tr>
-              <td colspan="6" class="empty-row">No hay archivos registrados.</td>
+              <td colspan="<?= $esSecretaria ? '6' : '4' ?>" class="empty-row">
+                <div class="empty-documents">
+                  <i class="bi bi-folder-x"></i>
+                  <span>
+                    <?= $esSecretaria ? 'No hay archivos registrados.' : 'No tienes documentos registrados.' ?>
+                  </span>
+                </div>
+              </td>
             </tr>
           <?php endif; ?>
         </tbody>
@@ -583,25 +633,31 @@ $alumnos  = $alumno->obtenerTodo();
 
 </div>
 
+<?php if ($esSecretaria): ?>
 <script>
   const archivoInput = document.getElementById('archivo_pdf');
   const fileName = document.getElementById('fileName');
   const btnReset = document.getElementById('btnReset');
 
-  archivoInput.addEventListener('change', function () {
-    if (this.files.length > 0) {
-      fileName.textContent = this.files[0].name;
-    } else {
-      fileName.textContent = 'Sin archivos seleccionados';
-    }
-  });
+  if (archivoInput && fileName) {
+    archivoInput.addEventListener('change', function () {
+      if (this.files.length > 0) {
+        fileName.textContent = this.files[0].name;
+      } else {
+        fileName.textContent = 'Sin archivos seleccionados';
+      }
+    });
+  }
 
-  btnReset.addEventListener('click', function () {
-    setTimeout(() => {
-      fileName.textContent = 'Sin archivos seleccionados';
-    }, 50);
-  });
+  if (btnReset && fileName) {
+    btnReset.addEventListener('click', function () {
+      setTimeout(() => {
+        fileName.textContent = 'Sin archivos seleccionados';
+      }, 50);
+    });
+  }
 </script>
+<?php endif; ?>
 
 </body>
 </html>
