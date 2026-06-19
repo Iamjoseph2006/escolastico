@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../config/Auth.php';
+require_once __DIR__ . '/../../config/database.php';
 
 require_login();
 
@@ -10,7 +11,87 @@ $rolUsuarioRaw = $usuario['rol'] ?? 'usuario';
 $rolUsuario = htmlspecialchars(ucfirst($rolUsuarioRaw), ENT_QUOTES, 'UTF-8');
 
 $esSecretaria = function_exists('is_secretaria') && is_secretaria();
+$idAlumno = auth_alumno_id();
+
+$rutaRegistrarAlumnos = '../alumnos/formulario.php';
+$rutaArchivos = '../archivos/formulario.php';
+$rutaNotas = '../notas/formulario.php';
+$rutaAsistencia = '../asistencia/formulario.php';
+
+$rutaReporteAlumno = '#';
+
+if ($idAlumno !== null && $idAlumno !== '') {
+    $rutaReporteAlumno = '../../controller/ReporteAlumnoController.php?accion=reporte&id=' . urlencode((string)$idAlumno);
+}
+
+$resumenPanel = [
+    'usuarios_activos' => 0,
+    'notas' => 0,
+    'asistencias' => 0,
+    'documentos' => 0
+];
+
+function contarRegistrosPanel($db, $sql, $params = [])
+{
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    return (int) $stmt->fetchColumn();
+}
+
+try {
+    $db = Database::connect();
+
+    if ($esSecretaria) {
+        $resumenPanel['usuarios_activos'] = contarRegistrosPanel(
+            $db,
+            "SELECT COUNT(*) FROM usuarios WHERE estado = 'activo'"
+        );
+
+        $resumenPanel['notas'] = contarRegistrosPanel(
+            $db,
+            "SELECT COUNT(*) FROM notas"
+        );
+
+        $resumenPanel['asistencias'] = contarRegistrosPanel(
+            $db,
+            "SELECT COUNT(*) FROM asistencias"
+        );
+
+        $resumenPanel['documentos'] = contarRegistrosPanel(
+            $db,
+            "SELECT COUNT(*) FROM archivos"
+        );
+    } else {
+        if ($idAlumno !== null) {
+            $resumenPanel['notas'] = contarRegistrosPanel(
+                $db,
+                "SELECT COUNT(*) FROM notas WHERE id_alumno = ?",
+                [$idAlumno]
+            );
+
+            $resumenPanel['asistencias'] = contarRegistrosPanel(
+                $db,
+                "SELECT COUNT(*) FROM asistencias WHERE id_alumno = ?",
+                [$idAlumno]
+            );
+
+            $resumenPanel['documentos'] = contarRegistrosPanel(
+                $db,
+                "SELECT COUNT(*) FROM archivos WHERE id_alumno = ?",
+                [$idAlumno]
+            );
+        }
+    }
+} catch (PDOException $e) {
+    $resumenPanel = [
+        'usuarios_activos' => 0,
+        'notas' => 0,
+        'asistencias' => 0,
+        'documentos' => 0
+    ];
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -35,6 +116,7 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
             --soft-green: #e9f9ef;
             --green: #16a34a;
             --danger: #dc2626;
+            --soft-red: #fff1f2;
             --shadow: 0 16px 38px rgba(15, 23, 42, 0.10);
         }
 
@@ -44,7 +126,7 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
 
         html,
         body {
-            height: 100%;
+            min-height: 100%;
             margin: 0;
         }
 
@@ -60,7 +142,7 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
 
         .main-container {
             width: min(1180px, 100%);
-            height: calc(100vh - 24px);
+            min-height: calc(100vh - 24px);
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -68,7 +150,6 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
         }
 
         .topbar {
-            flex: 0 0 auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -79,6 +160,7 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
             display: flex;
             align-items: center;
             gap: 12px;
+            min-width: 0;
         }
 
         .brand-icon {
@@ -86,163 +168,167 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
             height: 52px;
             display: inline-grid;
             place-items: center;
-            border-radius: 16px;
+            border-radius: 18px;
             background: linear-gradient(135deg, var(--primary), var(--sky));
-            color: #fff;
-            font-size: 1.35rem;
-            box-shadow: 0 12px 28px rgba(37, 99, 235, 0.24);
+            color: #ffffff;
+            font-size: 1.6rem;
+            box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22);
+            flex: 0 0 auto;
         }
 
-        .brand h1 {
+        .brand-title {
             margin: 0;
-            font-size: 1.3rem;
+            font-size: 1.35rem;
             font-weight: 950;
-            letter-spacing: -0.03em;
+            letter-spacing: -0.04em;
             line-height: 1.1;
         }
 
-        .brand p {
-            margin: 2px 0 0;
+        .brand-subtitle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
             color: var(--muted);
-            font-size: 0.92rem;
+            font-size: 0.94rem;
+            min-width: 0;
+            flex-wrap: wrap;
         }
 
-        .badge-role {
+        .brand-subtitle span:first-child {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .role-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
-            padding: 0.28rem 0.65rem;
+            gap: 6px;
+            padding: 5px 10px;
             border-radius: 999px;
             background: var(--soft-green);
             color: var(--green);
-            font-size: 0.76rem;
-            font-weight: 850;
-            vertical-align: middle;
+            font-size: 0.8rem;
+            font-weight: 900;
+            white-space: nowrap;
         }
 
-        .logout-link {
+        .logout-btn {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            gap: 0.45rem;
-            min-height: 42px;
-            padding: 0 1rem;
+            gap: 8px;
+            padding: 12px 20px;
             border: 1px solid var(--line);
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.92);
             color: var(--text);
-            font-weight: 850;
             text-decoration: none;
-            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+            font-weight: 900;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
             transition: 0.25s ease;
+            white-space: nowrap;
         }
 
-        .logout-link:hover {
+        .logout-btn:hover {
             color: var(--danger);
             transform: translateY(-1px);
+            border-color: rgba(220, 38, 38, 0.22);
         }
 
         .dashboard-grid {
-            flex: 1 1 auto;
+            flex: 1;
             min-height: 0;
             display: grid;
-            grid-template-columns: 2.2fr 1fr;
-            grid-template-rows: auto 1fr;
+            grid-template-columns: minmax(0, 2.2fr) minmax(320px, 0.95fr);
+            grid-template-rows: 225px minmax(0, 1fr);
             gap: 12px;
         }
 
+        .hero-card,
+        .profile-card,
         .card-box {
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(219, 228, 240, 0.95);
+            border: 1px solid rgba(219, 228, 240, 0.92);
             border-radius: 24px;
             background: rgba(255, 255, 255, 0.94);
             box-shadow: var(--shadow);
-        }
-
-        .card-box::before {
-            content: "";
-            position: absolute;
-            inset: 0 0 auto;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--sky));
-            z-index: 1;
+            backdrop-filter: blur(18px);
         }
 
         .hero-card {
-            padding: 18px 22px;
-            background: linear-gradient(135deg, #1d4ed8, #2563eb, #0ea5e9);
-            color: #fff;
-            min-height: 150px;
+            padding: 28px;
+            background: linear-gradient(135deg, #2b57e8 0%, #0ea5e9 100%);
+            color: #ffffff;
         }
 
+        .hero-card::before,
         .hero-card::after {
             content: "";
             position: absolute;
-            right: -40px;
-            top: -40px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .hero-card::before {
             width: 150px;
             height: 150px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.14);
+            right: -25px;
+            top: -35px;
         }
 
-        .hero-card .bubble2 {
-            position: absolute;
-            right: 140px;
-            bottom: -55px;
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.10);
+        .hero-card::after {
+            width: 170px;
+            height: 170px;
+            right: 150px;
+            bottom: -90px;
         }
 
-        .welcome-label {
+        .hero-badge {
             position: relative;
             z-index: 2;
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
-            margin-bottom: 8px;
-            padding: 0.32rem 0.7rem;
+            gap: 7px;
+            padding: 7px 14px;
             border-radius: 999px;
             background: rgba(255, 255, 255, 0.18);
-            font-size: 0.76rem;
-            font-weight: 800;
+            font-size: 0.82rem;
+            font-weight: 900;
+            margin-bottom: 12px;
         }
 
-        .hero-card h2 {
+        .hero-title {
             position: relative;
             z-index: 2;
+            width: min(760px, 100%);
             margin: 0;
-            font-size: clamp(1.4rem, 2vw, 1.9rem);
-            line-height: 1.08;
+            font-size: clamp(1.65rem, 3.1vw, 2.25rem);
             font-weight: 950;
-            letter-spacing: -0.04em;
-            max-width: 720px;
+            line-height: 1.08;
+            letter-spacing: -0.06em;
         }
 
-        .hero-card p {
+        .hero-text {
             position: relative;
             z-index: 2;
-            margin: 8px 0 0;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.9rem;
-            line-height: 1.45;
-            max-width: 640px;
+            margin: 12px 0 0;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.92);
         }
 
         .profile-card {
-            padding: 18px 20px;
+            padding: 20px 22px;
+            border-top: 5px solid var(--sky);
             display: flex;
             flex-direction: column;
             justify-content: center;
-            min-height: 150px;
         }
 
-        .avatar {
-            width: 56px;
-            height: 56px;
+        .profile-icon {
+            width: 54px;
+            height: 54px;
             display: inline-grid;
             place-items: center;
             border-radius: 18px;
@@ -250,50 +336,60 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
             color: var(--primary);
             font-size: 1.5rem;
             margin-bottom: 12px;
+            flex: 0 0 auto;
         }
 
-        .profile-card h3 {
-            margin: 0;
-            font-size: 1.1rem;
+        .profile-card h2 {
+            margin: 0 0 7px;
+            font-size: 1.16rem;
             font-weight: 950;
-            line-height: 1.2;
+            letter-spacing: -0.04em;
+            line-height: 1.16;
+            word-break: break-word;
         }
 
         .profile-card p {
-            margin: 8px 0 12px;
+            margin: 0;
             color: var(--muted);
-            font-size: 0.9rem;
-            line-height: 1.35;
+            font-size: 0.92rem;
+            line-height: 1.3;
         }
 
-        .profile-state {
+        .session-ok {
+            width: 100%;
+            min-height: 42px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 10px 14px;
-            border-radius: 16px;
+            gap: 8px;
+            margin-top: 14px;
+            padding: 10px 13px;
+            border-radius: 15px;
             background: var(--soft-green);
             color: var(--green);
-            font-size: 0.88rem;
-            font-weight: 850;
+            font-size: 0.9rem;
+            font-weight: 900;
+            line-height: 1.15;
+            overflow: hidden;
         }
 
-        .section-card {
-            padding: 16px 18px;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
+        .session-ok i {
+            flex: 0 0 auto;
+            font-size: 1rem;
+        }
+
+        .card-box {
+            padding: 18px;
+            border-top: 5px solid var(--sky);
         }
 
         .section-title {
             display: flex;
             align-items: center;
-            gap: 0.55rem;
-            margin: 0 0 12px;
-            font-size: 1rem;
+            gap: 9px;
+            margin: 0 0 14px;
+            font-size: 1.05rem;
             font-weight: 950;
-            line-height: 1.2;
-            flex: 0 0 auto;
+            letter-spacing: -0.03em;
         }
 
         .section-title i {
@@ -301,226 +397,229 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
         }
 
         .modules-grid {
-            flex: 1 1 auto;
-            min-height: 0;
+            height: calc(100% - 38px);
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 12px;
         }
 
         .module {
-            position: relative;
-            overflow: hidden;
-            min-height: 100%;
+            min-height: 300px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            gap: 10px;
             padding: 16px;
-            border: 1px solid var(--line);
-            border-radius: 18px;
-            background:
-                radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 8rem),
-                linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid rgba(219, 228, 240, 0.95);
+            border-radius: 20px;
+            background: linear-gradient(145deg, #ffffff 0%, #f8fbff 100%);
             color: var(--text);
             text-decoration: none;
             transition: 0.25s ease;
+            overflow: hidden;
+            min-width: 0;
         }
 
         .module:hover {
-            color: var(--text);
-            border-color: rgba(37, 99, 235, 0.38);
             transform: translateY(-2px);
-            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.09);
+            border-color: rgba(37, 99, 235, 0.35);
+            box-shadow: 0 18px 36px rgba(15, 23, 42, 0.10);
         }
 
         .module-header {
-            position: relative;
-            z-index: 2;
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 10px;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .module-header > div {
+            min-width: 0;
         }
 
         .module-title {
-            margin: 0;
-            font-size: 1rem;
+            margin: 0 0 6px;
+            font-size: 0.96rem;
             font-weight: 950;
-            line-height: 1.15;
+            line-height: 1.12;
+            letter-spacing: -0.04em;
+            overflow-wrap: anywhere;
         }
 
         .module-text {
-            margin: 6px 0 0;
+            margin: 0;
             color: var(--muted);
             font-size: 0.84rem;
-            line-height: 1.35;
+            line-height: 1.28;
+            overflow-wrap: anywhere;
         }
 
         .module-icon {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
+            flex: 0 0 auto;
             display: inline-grid;
             place-items: center;
-            flex: 0 0 auto;
-            border-radius: 14px;
+            border-radius: 15px;
             background: var(--soft-blue);
             color: var(--primary);
-            font-size: 1.1rem;
+            font-size: 1.05rem;
         }
 
         .module-big-icon {
-            position: relative;
-            z-index: 1;
-            width: 118px;
-            height: 118px;
+            width: 110px;
+            height: 110px;
             display: grid;
             place-items: center;
             align-self: center;
-            margin: 4px 0;
-            border-radius: 34px;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(14, 165, 233, 0.12));
+            border-radius: 28px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.13), rgba(14, 165, 233, 0.12));
+            border: 1px solid rgba(37, 99, 235, 0.12);
             color: var(--primary);
-            font-size: 3.9rem;
-            box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+            font-size: 3.6rem;
         }
 
-        .module-big-icon i,
-        .module-icon i {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-        }
-
-        .module-big-icon::after {
-            content: "";
-            position: absolute;
-            inset: 12px;
-            border-radius: 26px;
-            border: 1px dashed rgba(37, 99, 235, 0.22);
+        .module-big-icon i {
+            display: inline-grid;
+            place-items: center;
+            width: 68px;
+            height: 68px;
+            border-radius: 20px;
+            border: 1px dashed rgba(37, 99, 235, 0.25);
         }
 
         .module-footer {
-            position: relative;
-            z-index: 2;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
+            gap: 6px;
+            min-width: 0;
         }
 
         .module-chip {
             display: inline-flex;
             align-items: center;
-            padding: 0.3rem 0.55rem;
+            padding: 6px 10px;
             border-radius: 999px;
-            background: #f8fafc;
+            border: 1px solid rgba(219, 228, 240, 0.95);
+            background: rgba(255, 255, 255, 0.9);
             color: var(--muted);
             font-size: 0.72rem;
-            font-weight: 800;
-            border: 1px solid #edf2f7;
+            font-weight: 900;
+            white-space: nowrap;
+            flex: 0 0 auto;
         }
 
         .module-action {
             display: inline-flex;
             align-items: center;
-            gap: 0.34rem;
+            gap: 5px;
             color: var(--primary);
-            font-size: 0.84rem;
-            font-weight: 900;
+            font-weight: 950;
+            font-size: 0.82rem;
             white-space: nowrap;
+            min-width: 0;
         }
 
         .summary-list {
-            flex: 1 1 auto;
-            min-height: 0;
+            height: calc(100% - 38px);
             display: grid;
-            grid-template-rows: repeat(3, 1fr);
-            gap: 12px;
+            grid-auto-rows: 1fr;
+            gap: 10px;
         }
 
         .summary-item {
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding: 16px 18px;
-            border: 1px solid var(--line);
+            gap: 18px;
+            padding: 14px 18px;
+            border: 1px solid rgba(219, 228, 240, 0.95);
             border-radius: 18px;
-            background: #fff;
-            min-height: 112px;
-            transition: 0.25s ease;
-        }
-
-        .summary-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.07);
+            background: #ffffff;
+            min-width: 0;
         }
 
         .summary-icon {
-            width: 64px;
-            height: 64px;
-            min-width: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 20px;
-            background: linear-gradient(135deg, #eaf1ff 0%, #dbeafe 100%);
+            width: 58px;
+            height: 58px;
+            flex: 0 0 auto;
+            display: inline-grid;
+            place-items: center;
+            border-radius: 18px;
+            background: var(--soft-blue);
             color: var(--primary);
-            font-size: 1.85rem;
-            overflow: hidden;
+            font-size: 1.55rem;
         }
 
-        .summary-icon i {
-            width: 100%;
-            height: 100%;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            line-height: 1 !important;
-            font-size: 1.85rem;
-            text-align: center;
+        .summary-item div {
+            min-width: 0;
         }
 
-        .summary-icon i::before {
-            display: block;
-            line-height: 1 !important;
-            margin: 0 !important;
-        }
-
-        .summary-item strong {
-            display: block;
-            font-size: 0.96rem;
+        .summary-number {
+            display: inline-block;
+            min-width: 42px;
+            margin-right: 14px;
+            color: var(--primary);
+            font-size: 2.3rem;
             font-weight: 950;
-            line-height: 1.15;
-            margin-bottom: 4px;
+            line-height: 1;
+            vertical-align: middle;
         }
 
-        .summary-item span {
-            display: block;
-            color: var(--muted);
-            font-size: 0.84rem;
-            line-height: 1.35;
+        .summary-label {
+            display: inline-block;
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 950;
+            vertical-align: middle;
         }
 
-        @media (max-width: 992px) {
+        @media (max-width: 1100px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto;
+            }
 
-            html,
-            body {
+            .modules-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
                 height: auto;
             }
 
-            body {
-                padding: 12px;
+            .module {
+                min-height: 250px;
             }
 
-            .main-container {
+            .summary-list {
                 height: auto;
+            }
+        }
+
+        @media (max-width: 650px) {
+            body {
+                padding: 10px;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .logout-btn {
+                align-self: flex-end;
             }
 
             .dashboard-grid {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto;
+                gap: 10px;
+            }
+
+            .hero-card,
+            .profile-card,
+            .card-box {
+                border-radius: 20px;
+            }
+
+            .hero-card {
+                padding: 22px;
             }
 
             .modules-grid {
@@ -528,25 +627,31 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
             }
 
             .module {
-                min-height: 210px;
+                min-height: 230px;
             }
 
-            .module-big-icon {
-                width: 95px;
-                height: 95px;
-                font-size: 3rem;
+            .brand-title {
+                font-size: 1.18rem;
             }
 
-            .summary-list {
-                grid-template-rows: auto;
+            .brand-subtitle {
+                flex-wrap: wrap;
+            }
+
+            .summary-number {
+                font-size: 2rem;
+                min-width: 34px;
+            }
+
+            .summary-label {
+                font-size: 0.95rem;
             }
         }
     </style>
 </head>
 
 <body>
-
-    <div class="main-container">
+    <main class="main-container">
 
         <header class="topbar">
             <div class="brand">
@@ -555,56 +660,56 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
                 </span>
 
                 <div>
-                    <h1>Panel Escolástico</h1>
-                    <p>
-                        <?= $nombreUsuario ?>
-                        <span class="badge-role ms-2">
+                    <h1 class="brand-title">Panel Escolástico</h1>
+                    <div class="brand-subtitle">
+                        <span><?= $nombreUsuario ?></span>
+                        <span class="role-badge">
                             <i class="bi bi-person-badge-fill"></i>
                             <?= $rolUsuario ?>
                         </span>
-                    </p>
+                    </div>
                 </div>
             </div>
 
-            <a href="../../controller/AuthController.php?accion=logout" class="logout-link">
+            <a href="../../controller/AuthController.php?accion=logout" class="logout-btn">
                 <i class="bi bi-box-arrow-right"></i>
                 Salir
             </a>
         </header>
 
-        <main class="dashboard-grid">
+        <section class="dashboard-grid">
 
-            <section class="card-box hero-card">
-                <span class="welcome-label">
+            <article class="hero-card">
+                <span class="hero-badge">
                     <i class="bi bi-stars"></i>
                     Bienvenido/a al sistema académico
                 </span>
 
-                <h2>Gestiona tu información escolar desde un panel más visual.</h2>
+                <h2 class="hero-title">
+                    Accede a la información académica de forma rápida, clara y segura.
+                </h2>
 
-                <p>
-                    Accede a documentos, calificaciones y asistencia de forma rápida,
-                    ordenada.
+                <p class="hero-text">
+                    Consulta o gestiona documentos, calificaciones y asistencia según tu rol dentro del sistema.
                 </p>
+            </article>
 
-                <span class="bubble2"></span>
-            </section>
-
-            <aside class="card-box profile-card">
-                <div class="avatar">
+            <aside class="profile-card">
+                <span class="profile-icon">
                     <i class="bi bi-person-circle"></i>
-                </div>
+                </span>
 
-                <h3><?= $nombreUsuario ?></h3>
+                <h2><?= $nombreUsuario ?></h2>
+
                 <p>Perfil activo dentro del Sistema Escolástico.</p>
 
-                <div class="profile-state">
+                <div class="session-ok">
                     <i class="bi bi-check-circle-fill"></i>
-                    Sesión iniciada correctamente
+                    <span>Sesión iniciada correctamente</span>
                 </div>
             </aside>
 
-            <section class="card-box section-card">
+            <section class="card-box">
                 <h2 class="section-title">
                     <i class="bi bi-lightning-charge-fill"></i>
                     Accesos principales
@@ -614,11 +719,32 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
 
                     <?php if ($esSecretaria): ?>
 
-                        <a href="../alumnos/formulario.php" class="module">
+                        <a href="<?= $rutaRegistrarAlumnos ?>" class="module">
+                            <div class="module-header">
+                                <div>
+                                    <p class="module-title">Registrar alumnos</p>
+                                    <p class="module-text">Ingreso y control de estudiantes.</p>
+                                </div>
+                                <span class="module-icon">
+                                    <i class="bi bi-person-plus-fill"></i>
+                                </span>
+                            </div>
+
+                            <div class="module-big-icon">
+                                <i class="bi bi-person-plus-fill"></i>
+                            </div>
+
+                            <div class="module-footer">
+                                <span class="module-chip">Alumnos</span>
+                                <span class="module-action">Abrir <i class="bi bi-arrow-right"></i></span>
+                            </div>
+                        </a>
+
+                        <a href="<?= $rutaArchivos ?>" class="module">
                             <div class="module-header">
                                 <div>
                                     <p class="module-title">Archivos PDF</p>
-                                    <p class="module-text">Carga y revisión de documentos escolares.</p>
+                                    <p class="module-text">Carga y revisión de documentos.</p>
                                 </div>
                                 <span class="module-icon">
                                     <i class="bi bi-file-earmark-pdf-fill"></i>
@@ -631,15 +757,15 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
 
                             <div class="module-footer">
                                 <span class="module-chip">Documentos</span>
-                                <span class="module-action">Abrir módulo <i class="bi bi-arrow-right"></i></span>
+                                <span class="module-action">Abrir <i class="bi bi-arrow-right"></i></span>
                             </div>
                         </a>
 
-                        <a href="../notas/formulario.php" class="module">
+                        <a href="<?= $rutaNotas ?>" class="module">
                             <div class="module-header">
                                 <div>
                                     <p class="module-title">Notas</p>
-                                    <p class="module-text">Registro y consulta de calificaciones.</p>
+                                    <p class="module-text">Registro de calificaciones.</p>
                                 </div>
                                 <span class="module-icon">
                                     <i class="bi bi-journal-check"></i>
@@ -651,16 +777,16 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
                             </div>
 
                             <div class="module-footer">
-                                <span class="module-chip">Calificaciones</span>
-                                <span class="module-action">Abrir módulo <i class="bi bi-arrow-right"></i></span>
+                                <span class="module-chip">Notas</span>
+                                <span class="module-action">Abrir <i class="bi bi-arrow-right"></i></span>
                             </div>
                         </a>
 
-                        <a href="../asistencia/formulario.php" class="module">
+                        <a href="<?= $rutaAsistencia ?>" class="module">
                             <div class="module-header">
                                 <div>
                                     <p class="module-title">Asistencia</p>
-                                    <p class="module-text">Control de faltas, porcentajes y reportes.</p>
+                                    <p class="module-text">Control de faltas y reportes.</p>
                                 </div>
                                 <span class="module-icon">
                                     <i class="bi bi-calendar-check-fill"></i>
@@ -673,17 +799,38 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
 
                             <div class="module-footer">
                                 <span class="module-chip">Registros</span>
-                                <span class="module-action">Abrir módulo <i class="bi bi-arrow-right"></i></span>
+                                <span class="module-action">Abrir <i class="bi bi-arrow-right"></i></span>
                             </div>
                         </a>
 
                     <?php else: ?>
 
-                        <a href="../alumnos/formulario.php" class="module">
+                        <a href="<?= $rutaReporteAlumno ?>" class="module" target="_blank">
+                            <div class="module-header">
+                                <div>
+                                    <p class="module-title">Mi reporte PDF</p>
+                                    <p class="module-text">Imprime tus datos personales.</p>
+                                </div>
+                                <span class="module-icon">
+                                    <i class="bi bi-file-earmark-person-fill"></i>
+                                </span>
+                            </div>
+
+                            <div class="module-big-icon">
+                                <i class="bi bi-file-earmark-person-fill"></i>
+                            </div>
+
+                            <div class="module-footer">
+                                <span class="module-chip">Reporte</span>
+                                <span class="module-action">Imprimir <i class="bi bi-arrow-right"></i></span>
+                            </div>
+                        </a>
+
+                        <a href="<?= $rutaArchivos ?>" class="module">
                             <div class="module-header">
                                 <div>
                                     <p class="module-title">Mis archivos</p>
-                                    <p class="module-text">Consulta documentos PDF disponibles.</p>
+                                    <p class="module-text">Consulta documentos PDF.</p>
                                 </div>
                                 <span class="module-icon">
                                     <i class="bi bi-file-earmark-pdf-fill"></i>
@@ -696,15 +843,15 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
 
                             <div class="module-footer">
                                 <span class="module-chip">Documentos</span>
-                                <span class="module-action">Ver archivos <i class="bi bi-arrow-right"></i></span>
+                                <span class="module-action">Ver <i class="bi bi-arrow-right"></i></span>
                             </div>
                         </a>
 
-                        <a href="../notas/formulario.php" class="module">
+                        <a href="<?= $rutaNotas ?>" class="module">
                             <div class="module-header">
                                 <div>
                                     <p class="module-title">Mis notas</p>
-                                    <p class="module-text">Revisa tus calificaciones y reportes.</p>
+                                    <p class="module-text">Revisa tus calificaciones.</p>
                                 </div>
                                 <span class="module-icon">
                                     <i class="bi bi-journal-check"></i>
@@ -716,12 +863,12 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
                             </div>
 
                             <div class="module-footer">
-                                <span class="module-chip">Calificaciones</span>
-                                <span class="module-action">Ver notas <i class="bi bi-arrow-right"></i></span>
+                                <span class="module-chip">Notas</span>
+                                <span class="module-action">Ver <i class="bi bi-arrow-right"></i></span>
                             </div>
                         </a>
 
-                        <a href="../asistencia/formulario.php" class="module">
+                        <a href="<?= $rutaAsistencia ?>" class="module">
                             <div class="module-header">
                                 <div>
                                     <p class="module-title">Mi asistencia</p>
@@ -738,7 +885,7 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
 
                             <div class="module-footer">
                                 <span class="module-chip">Registros</span>
-                                <span class="module-action">Ver asistencia <i class="bi bi-arrow-right"></i></span>
+                                <span class="module-action">Ver <i class="bi bi-arrow-right"></i></span>
                             </div>
                         </a>
 
@@ -747,50 +894,96 @@ $esSecretaria = function_exists('is_secretaria') && is_secretaria();
                 </div>
             </section>
 
-            <aside class="card-box section-card">
+            <aside class="card-box">
                 <h2 class="section-title">
                     <i class="bi bi-info-circle-fill"></i>
                     Resumen del panel
                 </h2>
 
                 <div class="summary-list">
-                    <div class="summary-item">
-                        <span class="summary-icon">
-                            <i class="bi bi-file-earmark-pdf-fill"></i>
-                        </span>
-                        <div>
-                            <strong>Documentos</strong>
-                            <span>Acceso rápido a archivos académicos cargados en el sistema.</span>
-                        </div>
-                    </div>
 
-                    <div class="summary-item">
-                        <span class="summary-icon">
-                            <i class="bi bi-journal-check"></i>
-                        </span>
-                        <div>
-                            <strong>Rendimiento</strong>
-                            <span>Consulta de notas y reportes para revisar el avance académico.</span>
-                        </div>
-                    </div>
+                    <?php if ($esSecretaria): ?>
 
-                    <div class="summary-item">
-                        <span class="summary-icon">
-                            <i class="bi bi-calendar-check-fill"></i>
-                        </span>
-                        <div>
-                            <strong>Asistencia</strong>
-                            <span>Verifica faltas, porcentajes y registros de presencia.</span>
+                        <div class="summary-item">
+                            <span class="summary-icon">
+                                <i class="bi bi-people-fill"></i>
+                            </span>
+                            <div>
+                                <span class="summary-number"><?= $resumenPanel['usuarios_activos'] ?></span>
+                                <span class="summary-label">Usuarios activos</span>
+                            </div>
                         </div>
-                    </div>
+
+                        <div class="summary-item">
+                            <span class="summary-icon">
+                                <i class="bi bi-journal-check"></i>
+                            </span>
+                            <div>
+                                <span class="summary-number"><?= $resumenPanel['notas'] ?></span>
+                                <span class="summary-label">Notas registradas</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-item">
+                            <span class="summary-icon">
+                                <i class="bi bi-calendar-check-fill"></i>
+                            </span>
+                            <div>
+                                <span class="summary-number"><?= $resumenPanel['asistencias'] ?></span>
+                                <span class="summary-label">Asistencias</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-item">
+                            <span class="summary-icon">
+                                <i class="bi bi-file-earmark-pdf-fill"></i>
+                            </span>
+                            <div>
+                                <span class="summary-number"><?= $resumenPanel['documentos'] ?></span>
+                                <span class="summary-label">Documentos</span>
+                            </div>
+                        </div>
+
+                    <?php else: ?>
+
+                        <div class="summary-item">
+                            <span class="summary-icon">
+                                <i class="bi bi-journal-check"></i>
+                            </span>
+                            <div>
+                                <span class="summary-number"><?= $resumenPanel['notas'] ?></span>
+                                <span class="summary-label">Mis notas</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-item">
+                            <span class="summary-icon">
+                                <i class="bi bi-calendar-check-fill"></i>
+                            </span>
+                            <div>
+                                <span class="summary-number"><?= $resumenPanel['asistencias'] ?></span>
+                                <span class="summary-label">Mi asistencia</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-item">
+                            <span class="summary-icon">
+                                <i class="bi bi-file-earmark-pdf-fill"></i>
+                            </span>
+                            <div>
+                                <span class="summary-number"><?= $resumenPanel['documentos'] ?></span>
+                                <span class="summary-label">Mis documentos</span>
+                            </div>
+                        </div>
+
+                    <?php endif; ?>
+
                 </div>
             </aside>
 
-        </main>
+        </section>
 
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </main>
 </body>
 
 </html>
