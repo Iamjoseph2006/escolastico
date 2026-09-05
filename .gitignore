@@ -1,0 +1,22 @@
+# Dependencias y resultados de PHPUnit
+/vendor/
+/.phpunit.cache/
+/.phpunit.result.cache
+
+# Configuración local y secretos
+.env
+.env.local
+
+# Archivos cargados durante la ejecución
+/uploads/*
+!/uploads/.gitkeep
+
+# Editores y sistema operativo
+/.idea/
+/.vscode/
+.DS_Store
+Thumbs.db
+
+# Artefactos temporales de revisión
+/tmp_artifacts/
+*.inspect.ndjson

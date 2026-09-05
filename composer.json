@@ -1,0 +1,23 @@
+{
+  "name": "grupo02/sistema-escolastico",
+  "description": "Módulo de gestión de calificaciones del Sistema Escolástico",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "php": "^8.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "Escolastico\\": "src/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit --testdox"
+  },
+  "config": {
+    "sort-packages": true
+  }
+}
