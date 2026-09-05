@@ -1,6 +1,9 @@
 <?php
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../src/Service/CalificacionService.php';
+
+use Escolastico\Service\CalificacionService;
 
 class Notas{
 
@@ -14,11 +17,7 @@ class Notas{
 
     public function crear($data)
     {
-        //Validando que si no llega un valor desde el controlador que consume desde 
-        $npromedio = $data['npromedio'];
-        if ($npromedio === '' || $npromedio === null) {
-            $npromedio = ($data['nota1'] + $data['nota2'] + $data['nota3']) / 3;
-        }
+        $npromedio = $this->calcularPromedio($data);
         $sql = "INSERT INTO notas
         (materia, nota1, nota2, nota3, npromedio, id_alumno)
         VALUES (?, ?, ?, ?, ?, ?)";
@@ -60,10 +59,7 @@ class Notas{
     }
 
     public function actualizar($data){
-        $npromedio = $data['npromedio'];
-        if ($npromedio === '' || $npromedio === null) {
-            $npromedio = ($data['nota1'] + $data['nota2'] + $data['nota3']) / 3;
-        }
+        $npromedio = $this->calcularPromedio($data);
 
 
         $sql = "UPDATE notas 
@@ -116,5 +112,20 @@ class Notas{
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id_nota]);//2
         return $stmt->fetch(PDO::FETCH_ASSOC);//solo un registro
+    }
+
+    private function calcularPromedio($data)
+    {
+        foreach (['nota1', 'nota2', 'nota3'] as $campo) {
+            if (!isset($data[$campo]) || !is_numeric($data[$campo])) {
+                throw new InvalidArgumentException('Las tres calificaciones son obligatorias y deben ser numéricas.');
+            }
+        }
+
+        return CalificacionService::calcularPromedio(
+            (float) $data['nota1'],
+            (float) $data['nota2'],
+            (float) $data['nota3']
+        );
     }
 }

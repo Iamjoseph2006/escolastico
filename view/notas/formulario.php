@@ -412,6 +412,13 @@ $alumnos = is_secretaria() ? $alumno->obtenerTodo() : [];
     <i class="bi bi-arrow-left-circle"></i> Volver al dashboard
   </a>
 
+  <?php if (!empty($_SESSION['notas_error'])): ?>
+    <div class="alert alert-danger" role="alert">
+      <?= htmlspecialchars($_SESSION['notas_error']) ?>
+    </div>
+    <?php unset($_SESSION['notas_error']); ?>
+  <?php endif; ?>
+
   <?php if (is_secretaria()): ?>
   <!-- Tarjeta del formulario -->
   <div class="card-custom">
@@ -475,7 +482,7 @@ $alumnos = is_secretaria() ? $alumno->obtenerTodo() : [];
               type="number"
               step="0.01"
               min="0"
-              max="100"
+              max="10"
               name="nota1"
               id="nota1"
               class="form-control"
@@ -494,7 +501,7 @@ $alumnos = is_secretaria() ? $alumno->obtenerTodo() : [];
               type="number"
               step="0.01"
               min="0"
-              max="100"
+              max="10"
               name="nota2"
               id="nota2"
               class="form-control"
@@ -513,7 +520,7 @@ $alumnos = is_secretaria() ? $alumno->obtenerTodo() : [];
               type="number"
               step="0.01"
               min="0"
-              max="100"
+              max="10"
               name="nota3"
               id="nota3"
               class="form-control"
